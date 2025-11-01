@@ -1725,17 +1725,26 @@ const dragOverlay = document.getElementById('dragOverlay');
             applyMode = {type:'inner', containerRaw: raw, index: i};
             if(obj){
               selectedIdForApply = obj.id || 'minecraft:air';
-              slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
-              slotPreview.onerror = ()=> slotPreview.src = iconsPath + 'air.png';
+              const isAir = (selectedIdForApply || '').toLowerCase().includes('air');
+              
+              if (!isAir) {
+                slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
+                slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+              } else {
+                slotPreview.src = './icons/ui/empty.png';
+                slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+              }
+              
               const pretty = displayName(selectedIdForApply);
-              slotIdDisplay.value = (selectedIdForApply || '').toLowerCase().includes('air') ? 'empty' : pretty;
+              slotIdDisplay.value = isAir ? 'empty' : pretty;
               slotCountInput.value = obj.Count ?? 1;
               slotCountLabel.textContent = slotCountInput.value;
             } else {
               selectedIdForApply = 'minecraft:air';
-              slotPreview.src = iconsPath + 'air.png';
+              slotPreview.src = './icons/ui/empty.png';
+              slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
               const pretty = displayName(selectedIdForApply);
-              slotIdDisplay.value = (selectedIdForApply || '').toLowerCase().includes('air') ? 'empty' : pretty;
+              slotIdDisplay.value = 'empty';
               slotCountInput.value = 1;
               slotCountLabel.textContent = slotCountInput.value;
             }
