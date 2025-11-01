@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MiniPracticeKit Editor</title>
+  <title>MPK Editor</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
   <style>
     :root{
     --bg:#181818;
@@ -103,6 +104,45 @@
     #bookModal{z-index:400}
     #bookModal .modal{z-index:401}
 
+    #githubBtn { transition: transform .28s cubic-bezier(.2,.9,.3,1); }
+    #githubBtn:hover { transform: scale(1.08); }
+    #githubBtn.git-anim { animation: gitpop .6s ease; }
+
+    @keyframes gitpop {
+      0%   { transform: scale(1) rotate(0deg); }
+      30%  { transform: scale(1.18) rotate(10deg); }
+      60%  { transform: scale(0.95) rotate(-6deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .separator {
+      width: 1px;
+      height: 28px;
+      background-color: #777; 
+      border-radius: 2px;
+    }
+
+    .gray-btn {
+      background-color: #555;  
+      color: #ddd;             
+      border: 1px solid #666;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+      transition: background-color 0.18s, transform 0.18s;
+    }
+
+    #githubBtn {
+      display:block;
+      margin:0;
+    }
+
+
+    .gray-btn:hover {
+      background-color: #666;
+      transform: scale(1.03);
+    }
+
 
     #slotModal .modal{
     min-width:560px;
@@ -152,7 +192,7 @@
     .inline{display:inline-flex;gap:.5rem;align-items:center}
     .hide{display:none}
 
-    .container-cell{cursor:grab; position: relative;}
+    .container-cell{cursor:grab; position: relative; transition: transform .12s ease, opacity .12s ease; will-change: transform, opacity; }
     .container-cell .count {
     position: absolute;
     right: 6px;
@@ -165,7 +205,7 @@
     z-index: 3;
     }
     .container-cell.dragging, .slot.dragging{opacity:.6;transform:scale(.97)}
-    .container-cell img{ width:36px; height:36px; image-rendering:pixelated; }
+    .container-cell img{ width:36px; height:36px; image-rendering:pixelated; transition: transform .12s ease; }
 
     
     #containerModal .modal .title {
@@ -216,6 +256,14 @@
       border: 1px solid rgba(255,255,255,0.02);
     }
 
+    .btn.ghost {
+      transition: background-color 0.18s, transform 0.18s;
+    }
+
+    .btn.ghost:hover {
+      background-color: rgba(255,255,255,0.06);
+      transform: scale(1.03);
+    }
 
 
     @media (max-width:640px){
@@ -227,11 +275,17 @@
 <body>
   <header>
     <h1>MiniPracticeKit Editor</h1>
-    <div class="controls">
-      <label class="btn" for="file">Open hotbar.nbt</label>
-      <input id="file" type="file" accept=".nbt,.dat,.json" style="display:none" />
-      <button id="download" class="btn">Download hotbar.nbt</button>
-      <button id="reset" class="btn ghost">Reset</button>
+    <div class="controls" style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <img id="githubBtn" src="./icons/ui/github.png" width="28" height="28" alt="GitHub" title="Open GitHub" style="cursor:pointer;border-radius:6px;object-fit:contain">
+        <div class="separator" style="margin:0 5px;"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <label class="btn gray-btn" for="file">Open hotbar.nbt</label>
+        <input id="file" type="file" accept=".nbt,.dat,.json" style="display:none" />
+        <button id="download" class="btn gray-btn">Download hotbar.nbt</button>
+        <button id="reset" class="btn ghost">Reset</button>
+      </div>
     </div>
   </header>
 
@@ -263,7 +317,7 @@
 
       <div style="display:flex;gap:12px;margin-top:10px">
         <div style="width:120px;display:flex;flex-direction:column;align-items:center;gap:8px">
-          <img id="slotPreview" src="./icons/items/air.png" width="64" height="64" style="image-rendering:pixelated;border-radius:8px" onerror="this.src='./icons/items/air.png'"/>
+          <img id="slotPreview" src="./icons/items/air.png" width="128" height="128" style="image-rendering:pixelated;border-radius:8px" onerror="this.src='./icons/items/air.png'"/>
           <div class="inline">
             <button id="clearSlotBtn" class="btn small ghost">Clear</button>
           </div>
@@ -314,7 +368,6 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
             <div id="bookModalTitle" class="title">Edit book</div>
-            <div class="spoiler" id="bookModalSub">Edit pages</div>
         </div>
         <div>
             <button id="bookModalClose" class="btn small">Close</button>
@@ -333,7 +386,6 @@
 
 
         <div style="display:flex;gap:.5rem;justify-content:flex-start;margin-top:8px">
-            <button id="addBookPageBtn" class="btn small">Add page</button>
             <div style="flex:1"></div>
             <button id="saveBookBtn" class="btn">Save</button>
             <button id="cancelBookBtn" class="btn ghost">Cancel</button>
@@ -386,6 +438,7 @@
     const slotIdDisplay = document.getElementById('itemIdDisplay');
     const slotCountInput = document.getElementById('itemCountInput');
     const clearSlotBtn = document.getElementById('clearSlotBtn');
+    clearSlotBtn.style.display = '';
     const slotCountLabel = document.getElementById('itemCountLabel');
 
     slotCountInput.addEventListener('input', ()=> {
@@ -421,6 +474,18 @@
     let applyMode = {type:'top', index:0};
     let selectedIdForApply = 'minecraft:air';
 
+    const githubBtn = document.getElementById('githubBtn');
+    if (githubBtn) {
+      githubBtn.addEventListener('click', (ev) => {
+        githubBtn.classList.remove('git-anim');
+        void githubBtn.offsetWidth;
+        githubBtn.classList.add('git-anim');
+
+        window.open('https://github.com/qMaxXen/MiniPracticeKit-Editor', '_blank', 'noopener');
+
+        setTimeout(() => githubBtn.classList.remove('git-anim'), 700);
+      });
+    }
 
     
     let iconList = [];
@@ -431,7 +496,6 @@
     const bookModalClose = document.getElementById('bookModalClose');
     const saveBookBtn = document.getElementById('saveBookBtn');
     const cancelBookBtn = document.getElementById('cancelBookBtn');
-    const addBookPageBtn = document.getElementById('addBookPageBtn');
 
     let bookPagesArray = [];
     let bookCurrentPage = 0;
@@ -582,8 +646,14 @@
 
     function onPickerChoose(id){
       selectedIdForApply = id;
-      slotPreview.src = iconsPath + id.split(':').pop() + '.png';
-      slotPreview.onerror = ()=> slotPreview.src = iconsPath + 'air.png';
+      const isPickedAir = (selectedIdForApply || '').toLowerCase().includes('air');
+      if (!isPickedAir) {
+        slotPreview.src = iconsPath + id.split(':').pop() + '.png';
+        slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+      } else {
+        slotPreview.src = './icons/ui/empty.png';
+        slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+      }
       slotIdDisplay.value = displayName(id);
     }
 
@@ -651,17 +721,25 @@
         el.className = 'slot';
         el.draggable = true;
         el.dataset.slot = i;
+
         const nameNoNS = displayName(s.id);
         const countText = (typeof s.Count === 'number' && s.Count > 0) ? s.Count : '';
-        el.innerHTML = `
-          <div class="label">#${i + 1}</div>
-          <img src="${iconsPath + s.id.split(':').pop() + '.png'}" onerror="this.src='${iconsPath}air.png'">
-          <div class="count">${countText}</div>
-        `;
+        el.innerHTML = `<div class="label">#${i + 1}</div>`;
 
-        
-        const imgEl = el.querySelector('img');
-        if(imgEl) imgEl.draggable = false;
+        if (s.id && !(s.id.toLowerCase().includes('air'))) {
+          const imgEl = document.createElement('img');
+          imgEl.src = iconsPath + s.id.split(':').pop() + '.png';
+          imgEl.draggable = false;
+          el.appendChild(imgEl);
+        }
+
+
+        if (typeof s.Count === 'number' && s.Count > 0) {
+          const countDiv = document.createElement('div');
+          countDiv.className = 'count';
+          countDiv.textContent = s.Count;
+          el.appendChild(countDiv);
+        }
 
         if ((s.id || '').toLowerCase().includes('air')) {
           const emptyBadge = document.createElement('div');
@@ -678,6 +756,7 @@
           emptyBadge.textContent = 'empty';
           el.appendChild(emptyBadge);
         }
+
 
         if(isContainer(s._raw) || isContainerId(s.id)){
           const badge = document.createElement('div');
@@ -1059,13 +1138,6 @@
     }
 
 
-    addBookPageBtn.addEventListener('click', () => {
-      saveCurrentPageEditor();
-      bookPagesArray.push('');
-      bookCurrentPage = bookPagesArray.length - 1;
-      renderBookPageUI();
-    });
-
 
     function openBookModal(raw, context) {
       
@@ -1135,20 +1207,18 @@
     saveBookBtn.addEventListener('click', () => {
       if (!currentBookRaw) { closeBookModal(); return; }
 
-      
       saveCurrentPageEditor();
 
-      const pages = (Array.isArray(bookPagesArray) ? bookPagesArray.slice() : []);
-      currentBookRaw.tag[pagesKey] = pages;
+      const pages = Array.isArray(bookPagesArray) ? bookPagesArray.slice() : [];
 
+      currentBookRaw.tag = currentBookRaw.tag || {};
 
-      
       const hadPagesCapital = Array.isArray(currentBookRaw.tag.Pages);
       const hadPagesLower = Array.isArray(currentBookRaw.tag.pages);
-      const pagesKey = hadPagesCapital ? 'Pages' : (hadPagesLower ? 'pages' : 'pages');
+      const pagesKey = hadPagesCapital ? 'Pages' : (hadPagesLower ? 'pages' : 'Pages');
+
       currentBookRaw.tag[pagesKey] = pages;
 
-      
       const nameInputEl = document.getElementById('bookNameInput');
       const nameVal = nameInputEl ? (String(nameInputEl.value || '').trim()) : '';
       currentBookRaw.tag.display = currentBookRaw.tag.display || {};
@@ -1159,12 +1229,15 @@
           currentBookRaw.tag.display.Name = nameVal;
         }
       } else {
-        if ('Name' in currentBookRaw.tag.display) delete currentBookRaw.tag.display.Name;
+        if (currentBookRaw.tag.display && ('Name' in currentBookRaw.tag.display)) {
+          delete currentBookRaw.tag.display.Name;
+        }
       }
+
       const loreEl = document.getElementById('bookLoreTextarea');
       if (loreEl) {
         const loreRawText = String(loreEl.value || '');
-        const loreLines = loreRawText.split(/\r?\n/).map(l => l.trim()).filter((_, idx, arr) => true); 
+        const loreLines = loreRawText.split(/\r?\n/).map(l => l.trim());
         if (loreLines.length && loreLines.some(l => l !== '')) {
           currentBookRaw.tag.display = currentBookRaw.tag.display || {};
           currentBookRaw.tag.display.Lore = loreLines.map(serializeLoreEntry);
@@ -1175,8 +1248,6 @@
         }
       }
 
-
-      
       if (currentBookContext && currentBookContext.type === 'top') {
         const idx = currentBookContext.index;
         if (itemsArray[idx] && itemsArray[idx]._raw) {
@@ -1184,14 +1255,14 @@
           itemsArray[idx].Count = Number(itemsArray[idx].Count ?? 1);
           renderGrid();
         }
-      }
-      if (currentBookContext && currentBookContext.type === 'inner') {
+      } else if (currentBookContext && currentBookContext.type === 'inner') {
         renderCurrentContainer();
         renderGrid();
       }
 
       closeBookModal();
     });
+
 
     cancelBookBtn.addEventListener('click', closeBookModal);
     bookModalClose.addEventListener('click', closeBookModal);
@@ -1240,27 +1311,45 @@
       activeSlot = slotIndex;
       applyMode = {type:'top', index: slotIndex};
       const el = itemsArray[slotIndex] ?? {id:'minecraft:air',Count:0,_raw:{id:'minecraft:air',Count:0}};
+
       selectedIdForApply = el.id || 'minecraft:air';
-      slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
-      slotPreview.onerror = ()=> slotPreview.src = iconsPath + 'air.png';
+      const isAir = (selectedIdForApply || '').toLowerCase().includes('air');
+
+      if (!isAir) {
+        slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
+        slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+      } else {
+        slotPreview.src = './icons/ui/empty.png';
+        slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+      }
+
       const pretty = displayName(selectedIdForApply);
-      slotIdDisplay.value = (selectedIdForApply || '').toLowerCase().includes('air') ? 'empty' : pretty;
+      slotIdDisplay.value = isAir ? 'empty' : pretty;
       slotCountInput.value = el.Count ?? 1;
       slotCountLabel.textContent = slotCountInput.value;
+
+
+
       containerViewBtnWrap.innerHTML = '';
 
       
         if (isContainerId(el.id)){
-        const btn = document.createElement('button');
-        btn.className = 'btn small';
-        btn.textContent = 'View container';
-        btn.addEventListener('click', ()=> {
-            closeSlotModal();
-            const raw = el._raw && typeof el._raw === 'object' ? el._raw : {Slot:slotIndex, id: el.id, Count: el.Count};
-            ensureContainerStructure(raw);
-            openContainerModal(raw);
+          const btn = document.createElement('button');
+          btn.className = 'btn small';
+          btn.textContent = 'View container';
+          btn.addEventListener('click', ()=> {
+              closeSlotModal();
+              const raw = el._raw && typeof el._raw === 'object' ? el._raw : {Slot:slotIndex, id: el.id, Count: el.Count};
+              ensureContainerStructure(raw);
+              openContainerModal(raw);
         });
         containerViewBtnWrap.appendChild(btn);
+        }
+
+        if ((selectedIdForApply || '').toLowerCase().includes('air')) {
+          clearSlotBtn.style.display = 'none';
+        } else {
+          clearSlotBtn.style.display = '';
         }
 
         const idLower = (el.id || '').toLowerCase();
@@ -1288,12 +1377,12 @@
     });
 
     clearSlotBtn.addEventListener('click', ()=>{
-        selectedIdForApply = 'minecraft:air';
-        slotPreview.src = iconsPath + 'air.png';
-        slotPreview.onerror = ()=> slotPreview.src = iconsPath + 'air.png';
-        slotIdDisplay.value = 'empty';
-        slotCountInput.value = 1;
-        slotCountLabel.textContent = '1';
+      selectedIdForApply = 'minecraft:air';
+      slotPreview.src = './icons/ui/empty.png';
+      slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+      slotIdDisplay.value = 'empty';
+      slotCountInput.value = 1;
+      slotCountLabel.textContent = '1';
     });
 
     
@@ -1471,6 +1560,12 @@
 
             document.getElementById('modalSub');
             containerViewBtnWrap.innerHTML = '';
+
+            if ((selectedIdForApply || '').toLowerCase().includes('air')) {
+              clearSlotBtn.style.display = 'none';
+            } else {
+              clearSlotBtn.style.display = '';
+            }
 
             const idLowerInner = (selectedIdForApply || '').toLowerCase();
             if (idLowerInner.includes('writable_book') || idLowerInner.includes('book_and_quill') || idLowerInner.includes('book')) {
