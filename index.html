@@ -264,7 +264,46 @@
       background-color: rgba(255,255,255,0.06);
       transform: scale(1.03);
     }
+    .drag-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 24, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
+    }
 
+    .drag-overlay.active {
+      display: flex;
+    }
+
+    .drag-overlay-content {
+      text-align: center;
+      padding: 3rem;
+      border: 3px dashed #888;
+      border-radius: 16px;
+      background: rgba(136, 136, 136, 0.08);
+    }
+
+    .drag-overlay-content .icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+
+    .drag-overlay-content .text {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #d0d0d0;
+      margin-bottom: 0.5rem;
+    }
+
+    .drag-overlay-content .subtext {
+      font-size: 1rem;
+      color: var(--muted);
+    }
 
     @media (max-width:640px){
     :root{--slot-size:72px}
@@ -296,6 +335,13 @@
 
     <div style="height:8px"></div>
   </main>
+
+  <div class="drag-overlay" id="dragOverlay">
+    <div class="drag-overlay-content">
+      <div class="icon">📁</div>
+      <div class="text">Drop your hotbar.nbt file here</div>
+    </div>
+  </div>
   
   <div class="modal-backdrop" id="slotModal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -529,6 +575,99 @@
     }
     loadIconsIndex();
 
+const dragOverlay = document.getElementById('dragOverlay');
+    let dragCounter = 0; 
+    let isInternalDrag = false;
+
+    document.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('slot') || e.target.classList.contains('container-cell')) {
+        isInternalDrag = true;
+      }
+    }, true);
+
+    document.addEventListener('dragend', (e) => {
+      isInternalDrag = false;
+    }, true);
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      document.addEventListener(eventName, (e) => {
+        if (e.dataTransfer.types.includes('Files') && !isInternalDrag) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, false);
+    });
+
+    document.addEventListener('dragenter', (e) => {
+      if (e.dataTransfer.types.includes('Files') && !isInternalDrag) {
+        dragCounter++;
+        if (dragCounter === 1) {
+          dragOverlay.classList.add('active');
+        }
+      }
+    }, false);
+
+    document.addEventListener('dragleave', (e) => {
+      if (e.dataTransfer.types.includes('Files') && !isInternalDrag) {
+        dragCounter--;
+        if (dragCounter === 0) {
+          dragOverlay.classList.remove('active');
+        }
+      }
+    }, false);
+
+    document.addEventListener('dragover', (e) => {
+      if (e.dataTransfer.types.includes('Files') && !isInternalDrag) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    }, false);
+
+    document.addEventListener('drop', async (e) => {
+      if (isInternalDrag) return; 
+      
+      dragCounter = 0;
+      dragOverlay.classList.remove('active');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = files[0];
+        if (file.name.endsWith('.nbt') || file.name.endsWith('.dat') || file.name.endsWith('.json')) {
+          await handleFileLoad(file);
+        } else {
+          alert('Please drop a valid file (.nbt, .dat, or .json)');
+        }
+      }
+    }, false);
+
+    async function handleFileLoad(file) {
+      const ab = await file.arrayBuffer();
+      try {
+        const parsed = await NBT.read(ab);
+        currentNbt = parsed;
+        const found = findHotbarArray(parsed);
+        if (found && Array.isArray(found)) {
+          const ref = findArrayRef(parsed, found) || {parent: parsed, key: 'HotbarArray'};
+          hotbarRef = {parent: ref.parent, key: ref.key, array: found};
+          itemsArray = new Array(9).fill(null).map((_, idx) => {
+            const el = found[idx];
+            if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
+            const slot = (el.Slot ?? el.slot ?? idx);
+            const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
+            const Count = Number(el.Count ?? el.count ?? 1);
+            return {id, Count, Slot: Number(slot), _raw: el};
+          });
+          renderGrid();
+        } else {
+          currentNbt = parsed;
+          alert('Could not auto-locate hotbar array — file loaded but auto-mapping failed. Try exporting/formatting to the expected structure.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error parsing NBT file: ' + err.message);
+      }
+    }
     
     function displayName(fullIdOrName){
       if(!fullIdOrName) return '';
@@ -1597,35 +1736,11 @@
 
     
     fileInput.addEventListener('change', async (ev) => {
-      const f = ev.target.files[0];
-      if(!f) return;
-      const ab = await f.arrayBuffer();
-      try{
-        const parsed = await NBT.read(ab);
-        currentNbt = parsed;
-        const found = findHotbarArray(parsed);
-        if(found && Array.isArray(found)){
-          const ref = findArrayRef(parsed, found) || {parent: parsed, key: 'HotbarArray'};
-          hotbarRef = {parent: ref.parent, key: ref.key, array: found};
-          itemsArray = new Array(9).fill(null).map((_, idx)=>{
-            const el = found[idx];
-            if(!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
-            const slot = (el.Slot ?? el.slot ?? idx);
-            const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
-            const Count = Number(el.Count ?? el.count ?? 1);
-            return {id, Count, Slot: Number(slot), _raw: el};
-          });
-          renderGrid();
-        } else {
-          currentNbt = parsed;
-          alert('Could not auto-locate hotbar array — file loaded but auto-mapping failed. Try exporting/formatting to the expected structure.');
-        }
-      }catch(err){
-        console.error(err);
-        alert('Error parsing NBT file: ' + err.message);
-      }
-      ev.target.value = '';
-    });
+          const f = ev.target.files[0];
+          if (!f) return;
+          await handleFileLoad(f);
+          ev.target.value = '';
+        });
 
     
     downloadBtn.addEventListener('click', async ()=>{
