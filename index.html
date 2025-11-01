@@ -1350,7 +1350,7 @@
         if (idLower.includes('writable_book') || idLower.includes('book_and_quill') || idLower.includes('book')) {
         const customBtn = document.createElement('button');
         customBtn.className = 'btn';
-        customBtn.textContent = 'Customize';
+        customBtn.textContent = 'Edit book';
         customBtn.addEventListener('click', (e) => {
             const raw = el._raw && typeof el._raw === 'object' ? el._raw : {Slot: slotIndex, id: el.id, Count: el.Count};
             raw.tag = raw.tag || {};
@@ -1565,7 +1565,7 @@
             if (idLowerInner.includes('writable_book') || idLowerInner.includes('book_and_quill') || idLowerInner.includes('book')) {
               const customBtnInner = document.createElement('button');
               customBtnInner.className = 'btn';
-              customBtnInner.textContent = 'Customize';
+              customBtnInner.textContent = 'Edit book';
 
               customBtnInner.addEventListener('click', () => {
                 const rawBook = (obj && typeof obj === 'object') ? obj : {Slot: i, id: obj?.id, Count: obj?.Count};
