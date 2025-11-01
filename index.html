@@ -1072,6 +1072,11 @@ const dragOverlay = document.getElementById('dragOverlay');
       currentContainerRaw = null;
       currentContainerContext = null;
       containerGrid.innerHTML = '';
+      
+      containerHistory = [];
+      
+      const backBtn = document.getElementById('containerBackBtn');
+      if (backBtn) backBtn.remove();
     }
 
 
@@ -1523,8 +1528,18 @@ const dragOverlay = document.getElementById('dragOverlay');
 
     let currentContainerContext = null;
 
-    function openContainerModal(raw, context){
+    let containerHistory = [];
+
+    function openContainerModal(raw, context, isBackNavigation = false){
         closeSlotModal();
+        
+        if (!isBackNavigation && currentContainerRaw !== null) {
+            containerHistory.push({
+                raw: currentContainerRaw,
+                context: currentContainerContext
+            });
+        }
+        
         currentContainerRaw = ensureContainerStructure(raw);
         currentContainerContext = context || null;
 
@@ -1532,10 +1547,44 @@ const dragOverlay = document.getElementById('dragOverlay');
         containerTitle.textContent = displayName(titleCandidate);
         containerSub.textContent = `Editing container contents`;
         renderCurrentContainer();
+        
+        updateContainerBackButton();
+        
         containerModal.classList.add('show');
         containerModal.style.display = 'flex';
     }
 
+    function updateContainerBackButton() {
+        const backBtnId = 'containerBackBtn';
+        let existingBtn = document.getElementById(backBtnId);
+        
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+        
+        if (containerHistory.length > 0) {
+            const backBtn = document.createElement('button');
+            backBtn.id = backBtnId;
+            backBtn.className = 'btn small';
+            backBtn.textContent = '← Back';
+            backBtn.style.marginRight = 'auto';
+            
+            backBtn.addEventListener('click', () => {
+                goBackToParentContainer();
+            });
+            
+            const buttonContainer = deleteContainerBtn.parentElement;
+            buttonContainer.insertBefore(backBtn, buttonContainer.firstChild);
+        }
+    }
+
+    function goBackToParentContainer() {
+        if (containerHistory.length === 0) return;
+        
+        const previous = containerHistory.pop();
+        
+        openContainerModal(previous.raw, previous.context, true);
+    }
 
     function renderCurrentContainer(){
       const raw = currentContainerRaw;
