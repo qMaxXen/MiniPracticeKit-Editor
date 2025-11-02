@@ -309,6 +309,29 @@
     :root{--slot-size:72px}
     #slotModal .modal{min-width:92%; max-width:92%;}
     }
+    @media (prefers-reduced-motion: no-preference) {
+      @keyframes btn-pop {
+        0%   { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+        40%  { transform: scale(1.09); filter: drop-shadow(0 6px 20px rgba(77,171,247,0.12)); }
+        100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+      }
+
+      .btn.active {
+        animation: btn-pop 260ms cubic-bezier(.2,.9,.3,1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn.active { animation: none !important; transform: none !important; }
+    }
+
+    .btn.small {
+      padding: 6px 8px;     
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+
+
   </style>
 </head>
 <body>
@@ -501,6 +524,47 @@
 
     const applySlotBtn = document.getElementById('applySlotBtn');
     const modalClose = document.getElementById('modalClose');
+
+    let slotClipboard = null;
+
+    const copySlotBtn = document.createElement('button');
+    copySlotBtn.className = 'btn small';
+    copySlotBtn.id = 'copySlotBtn';
+    copySlotBtn.textContent = 'Copy';
+    copySlotBtn.style.margin = '0 6px 0 0';
+    copySlotBtn.style.padding = '6px 8px';
+    copySlotBtn.style.fontSize = '0.85rem';
+
+    const pasteSlotBtn = document.createElement('button');
+    pasteSlotBtn.className = 'btn small';
+    pasteSlotBtn.id = 'pasteSlotBtn';
+    pasteSlotBtn.textContent = 'Paste';
+    pasteSlotBtn.style.margin = '0 6px 0 0';
+    pasteSlotBtn.style.padding = '6px 8px';
+    pasteSlotBtn.style.fontSize = '0.85rem';
+    pasteSlotBtn.disabled = true;
+
+    if (modalClose && modalClose.parentElement) {
+      modalClose.parentElement.insertBefore(copySlotBtn, modalClose);
+      modalClose.parentElement.insertBefore(pasteSlotBtn, copySlotBtn);
+
+      try {
+        modalClose.parentElement.style.display = 'flex';
+        modalClose.parentElement.style.alignItems = 'center';
+        modalClose.parentElement.style.gap = '1px';
+      } catch(e){}
+
+      try {
+        modalClose.classList.remove('ghost', 'gray-btn');
+        modalClose.classList.add('small');
+        modalClose.style.padding = '6px 8px';
+        modalClose.style.fontSize = '0.85rem';
+        modalClose.style.margin = '0 6px 0 0';
+        modalClose.style.borderRadius = '6px';
+      } catch(e){}
+    }
+
+
 
     const containerViewBtnWrap = document.getElementById('containerViewBtnWrap');
 
@@ -705,6 +769,135 @@ const dragOverlay = document.getElementById('dragOverlay');
     }
 
     
+    function updateCopyPasteButtons() {
+      pasteSlotBtn.disabled = !slotClipboard;
+      copySlotBtn.disabled = false;
+    }
+
+    copySlotBtn.addEventListener('click', () => {
+      copySlotBtn.classList.add('active');
+      setTimeout(() => copySlotBtn.classList.remove('active'), 320);
+
+      const ctx = applyMode || { type: 'top', index: activeSlot };
+
+      try {
+        if (ctx.type === 'top') {
+          const idx = Number(ctx.index ?? activeSlot);
+          const top = itemsArray[idx] || { id: 'minecraft:air', Count: 1, _raw: { id: 'minecraft:air', Count: 1 } };
+          const rawCopy = (top._raw && typeof top._raw === 'object') ? JSON.parse(JSON.stringify(top._raw)) : { id: top.id || 'minecraft:air', Count: Number(top.Count ?? 1) };
+          delete rawCopy.Slot;
+          delete rawCopy.slot;
+          slotClipboard = { source: 'top', data: rawCopy };
+        } else {
+          const container = ctx.containerRaw;
+          const slotIndex = Number(ctx.index);
+          let obj = null;
+          if (container && container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items)) {
+            obj = container.tag.BlockEntityTag.Items.find(it => Number(it.Slot ?? it.slot ?? -1) === slotIndex) || null;
+          }
+          const rawCopy = (obj && typeof obj === 'object') ? JSON.parse(JSON.stringify(obj)) : { id: 'minecraft:air', Count: 1 };
+          delete rawCopy.Slot;
+          delete rawCopy.slot;
+          slotClipboard = { source: 'inner', data: rawCopy };
+        }
+        updateCopyPasteButtons();
+      } catch (e) {
+        console.error('Copy failed', e);
+        alert('Failed to copy item: ' + (e && e.message ? e.message : String(e)));
+      }
+    });
+
+
+    pasteSlotBtn.addEventListener('click', () => {
+      if (!slotClipboard) return;
+
+      pasteSlotBtn.classList.add('active');
+      setTimeout(() => pasteSlotBtn.classList.remove('active'), 320);
+
+      const ctx = applyMode || { type: 'top', index: activeSlot };
+
+      try {
+        const cloned = JSON.parse(JSON.stringify(slotClipboard.data || {})); // deep clone
+        if (ctx.type === 'top') {
+          const idx = Number(ctx.index ?? activeSlot);
+          cloned.Slot = idx;
+          itemsArray[idx] = {
+            id: cloned.id || 'minecraft:air',
+            Count: Number(cloned.Count ?? cloned.count ?? 0),
+            Slot: idx,
+            _raw: cloned
+          };
+          selectedIdForApply = itemsArray[idx].id || 'minecraft:air';
+          const isAir = (selectedIdForApply || '').toLowerCase().includes('air');
+          if (!isAir) {
+            slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
+            slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+            slotIdDisplay.value = displayName(selectedIdForApply);
+          } else {
+            slotPreview.src = './icons/ui/empty.png';
+            slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+            slotIdDisplay.value = 'empty';
+          }
+          slotCountInput.value = itemsArray[idx].Count ?? 1;
+          slotCountLabel.textContent = slotCountInput.value;
+          renderGrid();
+        } else {
+          const container = ctx.containerRaw;
+          const slotIndex = Number(ctx.index);
+          if (!container) throw new Error('Container context missing for paste');
+          ensureContainerStructure(container);
+          let items = container.tag.BlockEntityTag.Items || [];
+          items = items.filter(it => Number(it.Slot ?? it.slot ?? -1) !== slotIndex);
+          cloned.Slot = slotIndex;
+          items.push(cloned);
+          container.tag.BlockEntityTag.Items = items;
+
+          for (let h = 0; h < itemsArray.length; h++) {
+            const top = itemsArray[h];
+            if (!top || !top._raw) continue;
+            if (top._raw === container) {
+              break;
+            }
+            if (top._raw.tag && top._raw.tag.BlockEntityTag && top._raw.tag.BlockEntityTag.Items === container.tag.BlockEntityTag.Items) {
+              top._raw = container;
+              break;
+            }
+          }
+
+          selectedIdForApply = cloned.id || 'minecraft:air';
+          const isAirInner = (selectedIdForApply || '').toLowerCase().includes('air');
+          if (!isAirInner) {
+            slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
+            slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+            slotIdDisplay.value = displayName(selectedIdForApply);
+          } else {
+            slotPreview.src = './icons/ui/empty.png';
+            slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+            slotIdDisplay.value = 'empty';
+          }
+          slotCountInput.value = cloned.Count ?? 1;
+          slotCountLabel.textContent = slotCountInput.value;
+
+          renderCurrentContainer();
+          renderGrid();
+        }
+
+        updateSlotModalButtons();
+        updateCopyPasteButtons();
+        try { pickRenderList(iconList.map(f=>f.replace(/\.png$/i,'')), ''); } catch(e){}
+      } catch (e) {
+        console.error('Paste failed', e);
+        alert('Failed to paste item: ' + (e && e.message ? e.message : String(e)));
+      }
+    });
+
+
+    modalClose.addEventListener('click', () => {
+      modalClose.classList.add('active');
+      setTimeout(() => modalClose.classList.remove('active'), 320);
+    });
+
+
     function scoreName(name, q){
       const plain = name.replace(/_/g,' ').toLowerCase();
       const query = (q||'').trim().toLowerCase();
@@ -820,7 +1013,8 @@ const dragOverlay = document.getElementById('dragOverlay');
       const idLower = (selectedIdForApply || '').toLowerCase();
       if (idLower.includes('writable_book') || idLower.includes('book_and_quill')) {
         const editBtn = document.createElement('button');
-        editBtn.className = 'btn';
+        editBtn.className = 'btn small';
+        editBtn.style.marginRight = '6px';
         editBtn.textContent = 'Edit book';
         editBtn.addEventListener('click', () => {
           if (applyMode.type === 'top') {
@@ -843,6 +1037,7 @@ const dragOverlay = document.getElementById('dragOverlay');
         });
         containerViewBtnWrap.appendChild(editBtn);
       }
+      updateCopyPasteButtons();
     }
 
 
@@ -1683,7 +1878,11 @@ const dragOverlay = document.getElementById('dragOverlay');
       slotIdDisplay.value = 'empty';
       slotCountInput.value = 1;
       slotCountLabel.textContent = '1';
+
+      updateSlotModalButtons();
+      updateCopyPasteButtons();
     });
+
 
     
     let currentContainerRaw = null;
@@ -1939,6 +2138,7 @@ const dragOverlay = document.getElementById('dragOverlay');
             slotModal.style.display = 'flex';
             pickerSearch.value = '';
             pickRenderList(iconList.map(f=>f.replace(/\.png$/i,'')), '');
+            updateCopyPasteButtons();
 
           }
           pointerDownInfo = null;
