@@ -91,8 +91,47 @@ const containerModal = document.getElementById('containerModal');
 const containerGrid = document.getElementById('containerGrid');
 const closeContainer = document.getElementById('closeContainer');
 const deleteContainerBtn = document.getElementById('deleteContainer');
-const containerTitle = document.getElementById('containerTitle');
+
+const containerItemName = document.getElementById('containerItemName');
 const containerSub = document.getElementById('containerSub');
+const containerNameInput = document.getElementById('containerNameInput');
+
+if (containerNameInput) {
+  const saveContainerName = () => {
+    if (!currentContainerRaw) return;
+    const v = String(containerNameInput.value || '').trim();
+    currentContainerRaw.tag = currentContainerRaw.tag || {};
+    currentContainerRaw.tag.display = currentContainerRaw.tag.display || {};
+    if (v) {
+      currentContainerRaw.tag.display.Name = JSON.stringify({ text: v });
+    } else {
+      if (currentContainerRaw.tag.display && ('Name' in currentContainerRaw.tag.display)) {
+        delete currentContainerRaw.tag.display.Name;
+      }
+    }
+
+    containerNameInput.value = getContainerDisplayName(currentContainerRaw) || '';
+
+    for (let h = 0; h < itemsArray.length; h++) {
+      const top = itemsArray[h];
+      if (!top || !top._raw) continue;
+      if (top._raw.tag && top._raw.tag.BlockEntityTag && top._raw.tag.BlockEntityTag.Items === currentContainerRaw.tag.BlockEntityTag.Items) {
+        top._raw = currentContainerRaw;
+        break;
+      }
+    }
+  };
+
+  containerNameInput.addEventListener('change', saveContainerName);
+  containerNameInput.addEventListener('keypress', (ev) => {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      saveContainerName();
+    }
+  });
+}
+
+
 
 
 let currentNbt = null;
@@ -142,11 +181,7 @@ let currentBookContext = null;
 
 async function loadIconsIndex(){
     const candidates = [
-    './icons/icons.json',
-    './icons/items/icons.json',
-    './icons/items.json',
-    './icons/list/icons.json',
-    './icons/list.json'
+    './icons/list/icons.json'
     ];
     for(const url of candidates){
     try{
@@ -315,6 +350,43 @@ function canonicalIdFromName(nameOrFilename){
     if(n.includes(':')) return n;
     return 'minecraft:' + n;
 }
+
+function getContainerItemTypeName(raw) {
+  try {
+    const idcand = (raw && raw.tag && raw.tag.BlockEntityTag && raw.tag.BlockEntityTag.id)
+                 || (raw && raw.id)
+                 || '';
+    return displayName(idcand || '');
+  } catch (e) {
+    return 'container';
+  }
+}
+
+function getContainerDisplayName(raw) {
+  try {
+    if (raw && raw.tag && raw.tag.display && raw.tag.display.Name) {
+      const rawName = raw.tag.display.Name;
+      if (typeof rawName === 'string') {
+        try {
+          const parsed = JSON.parse(rawName);
+          if (parsed && typeof parsed.text === 'string') return parsed.text;
+          return String(parsed || rawName);
+        } catch (e) {
+          return rawName;
+        }
+      } else if (typeof rawName === 'object' && rawName !== null && typeof rawName.text === 'string') {
+        return rawName.text;
+      } else {
+        return String(rawName);
+      }
+    }
+  } catch (e) {}
+  const idcand = (raw && raw.tag && raw.tag.BlockEntityTag && raw.tag.BlockEntityTag.id)
+               || (raw && raw.id)
+               || 'container';
+  return displayName(idcand);
+}
+
 
 
 function isContainerId(id){
@@ -874,17 +946,19 @@ function moveWithinContainer(containerRaw, fromIdx, toIdx){
 }
 
 function closeContainerModal(){
-    containerModal.classList.remove('show');
-    containerModal.style.display = 'none';
-    currentContainerRaw = null;
-    currentContainerContext = null;
-    containerGrid.innerHTML = '';
-    
-    containerHistory = [];
-    
-    const backBtn = document.getElementById('containerBackBtn');
-    if (backBtn) backBtn.remove();
+  containerModal.classList.remove('show');
+  containerModal.style.display = 'none';
+
+  currentContainerRaw = null;
+  currentContainerContext = null;
+  containerGrid.innerHTML = '';
+
+  containerHistory = []; 
+  const backBtn = document.getElementById('containerBackBtn');
+  if (backBtn) backBtn.remove();
 }
+
+
 
 
 function closeSlotModal(){
@@ -1447,60 +1521,68 @@ let currentContainerContext = null;
 let containerHistory = [];
 
 function openContainerModal(raw, context, isBackNavigation = false){
-    closeSlotModal();
-    
-    if (!isBackNavigation && currentContainerRaw !== null) {
-        containerHistory.push({
-            raw: currentContainerRaw,
-            context: currentContainerContext
-        });
-    }
-    
-    currentContainerRaw = ensureContainerStructure(raw);
-    currentContainerContext = context || null;
+  closeSlotModal();
 
-    const titleCandidate = (currentContainerRaw.display && currentContainerRaw.display.Name) || (currentContainerRaw.tag && currentContainerRaw.tag.BlockEntityTag && currentContainerRaw.tag.BlockEntityTag.id) || currentContainerRaw.id || 'container';
-    containerTitle.textContent = displayName(titleCandidate);
-    containerSub.textContent = `Editing container contents`;
-    renderCurrentContainer();
-    
-    updateContainerBackButton();
-    
-    containerModal.classList.add('show');
-    containerModal.style.display = 'flex';
+  if (context && context.type === 'hotbar') {
+    containerHistory = []; 
+  } else {
+    if (!isBackNavigation && currentContainerRaw !== null) {
+      containerHistory.push({
+        raw: currentContainerRaw,
+        context: currentContainerContext
+      });
+    }
+  }
+
+  currentContainerRaw = ensureContainerStructure(raw);
+  currentContainerContext = context || null;
+
+  try {
+    if (containerItemName) containerItemName.textContent = getContainerItemTypeName(currentContainerRaw) || 'container';
+    if (containerNameInput) containerNameInput.value = getContainerDisplayName(currentContainerRaw) || '';
+  } catch (e) {}
+
+  containerSub.textContent = `Editing container contents`;
+  renderCurrentContainer();
+
+  updateContainerBackButton();
+
+  containerModal.classList.add('show');
+  containerModal.style.display = 'flex';
 }
+
+
 
 function updateContainerBackButton() {
-    const backBtnId = 'containerBackBtn';
-    let existingBtn = document.getElementById(backBtnId);
-    
-    if (existingBtn) {
-        existingBtn.remove();
-    }
-    
-    if (containerHistory.length > 0) {
-        const backBtn = document.createElement('button');
-        backBtn.id = backBtnId;
-        backBtn.className = 'btn small';
-        backBtn.textContent = '← Back';
-        backBtn.style.marginRight = 'auto';
-        
-        backBtn.addEventListener('click', () => {
-            goBackToParentContainer();
-        });
-        
-        const buttonContainer = deleteContainerBtn.parentElement;
-        buttonContainer.insertBefore(backBtn, buttonContainer.firstChild);
-    }
+  const backBtnId = 'containerBackBtn';
+  let existingBtn = document.getElementById(backBtnId);
+  if (existingBtn) existingBtn.remove();
+
+  if (containerHistory.length > 0) {
+    const backBtn = document.createElement('button');
+    backBtn.id = backBtnId;
+    backBtn.className = 'btn small';
+    backBtn.textContent = '← Back';
+    backBtn.style.marginRight = 'auto';
+
+    backBtn.addEventListener('click', () => {
+      goBackToParentContainer();
+    });
+
+    const buttonContainer = deleteContainerBtn.parentElement;
+    buttonContainer.insertBefore(backBtn, buttonContainer.firstChild);
+  }
 }
 
+
 function goBackToParentContainer() {
-    if (containerHistory.length === 0) return;
-    
-    const previous = containerHistory.pop();
-    
-    openContainerModal(previous.raw, previous.context, true);
+  if (containerHistory.length === 0) return;
+
+  const previous = containerHistory.pop();
+
+  openContainerModal(previous.raw, previous.context, true);
 }
+
 
 function renderCurrentContainer(){
     const raw = currentContainerRaw;

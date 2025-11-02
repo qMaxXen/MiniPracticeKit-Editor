@@ -130,8 +130,39 @@
     <div class="modal" style="max-width:980px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-           <div id="containerTitle" class="title">Container</div>
-           <div id="containerSub" class="spoiler"></div>
+          <div style="display:flex;align-items:center;gap:1px;">
+            <div id="containerItemName" class="title"
+                style="margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; flex-shrink:0;">
+              Container
+            </div>
+
+
+
+            <div style="color:var(--muted);font-size:0.95rem; flex-shrink:0; margin:0 2px;">—</div>
+
+            <input id="containerNameInput" type="text"
+              placeholder="Container display name"
+              style="
+                background:rgba(255,255,255,0.02); /* faint background to suggest interactivity */
+                border:0;
+                border-bottom:1px solid rgba(255,255,255,0.1); /* slightly more visible than before */
+                color:var(--accent);
+                padding:4px 6px;
+                border-radius:4px;
+                flex-shrink:1;
+                flex-grow:1;
+                min-width:160px;
+                outline:none;
+                transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+                cursor:text;
+              "
+              onfocus="this.style.borderBottom='1px solid var(--accent)'; this.style.background='rgba(255,255,255,0.05)'; this.style.boxShadow='0 0 5px rgba(255,255,255,0.1)';"
+              onblur="this.style.borderBottom='1px solid rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'; this.style.boxShadow='none';"
+              onmouseover="this.style.background='rgba(255,255,255,0.04)';"
+              onmouseout="this.style.background='rgba(255,255,255,0.02)';"
+            />
+          </div>
+          <div id="containerSub" class="spoiler"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0">Delete container</button>
