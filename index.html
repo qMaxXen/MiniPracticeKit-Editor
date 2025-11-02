@@ -345,6 +345,7 @@
       <div style="display:flex; align-items:center; gap:6px;">
         <label class="btn gray-btn" for="file">Open hotbar.nbt</label>
         <input id="file" type="file" accept=".nbt,.dat,.json" style="display:none" />
+        <button id="loadDefault" class="btn gray-btn">Load default</button>
         <button id="download" class="btn gray-btn">Download hotbar.nbt</button>
         <button id="reset" class="btn ghost">Reset</button>
       </div>
@@ -492,6 +493,7 @@
     const fileInput = document.getElementById('file');
     const grid = document.getElementById('grid');
     const downloadBtn = document.getElementById('download');
+    const loadDefaultBtn = document.getElementById('loadDefault');
     const resetBtn = document.getElementById('reset');
 
     const slotModal = document.getElementById('slotModal');
@@ -748,6 +750,45 @@ const dragOverlay = document.getElementById('dragOverlay');
       }
     }
     
+    async function loadDefaultHotbar() {
+      try {
+        const response = await fetch('default/hotbar.nbt');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        }
+        const ab = await response.arrayBuffer();
+        
+        try {
+          const parsed = await NBT.read(ab);
+          currentNbt = parsed;
+          const found = findHotbarArray(parsed);
+          if (found && Array.isArray(found)) {
+            const ref = findArrayRef(parsed, found) || {parent: parsed, key: 'HotbarArray'};
+            hotbarRef = {parent: ref.parent, key: ref.key, array: found};
+            itemsArray = new Array(9).fill(null).map((_, idx) => {
+              const el = found[idx];
+              if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
+              const slot = (el.Slot ?? el.slot ?? idx);
+              const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
+              const Count = Number(el.Count ?? el.count ?? 1);
+              return {id, Count, Slot: Number(slot), _raw: el};
+            });
+            renderGrid();
+          } else {
+            currentNbt = parsed;
+            alert('Could not auto-locate hotbar array — file loaded but auto-mapping failed. Try exporting/formatting to the expected structure.');
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error parsing NBT file: ' + err.message);
+        }
+      } catch (fetchErr) {
+        console.error('Failed to load default hotbar:', fetchErr);
+        alert('Could not load default hotbar file. Make sure default/hotbar.nbt exists.');
+      }
+    }
+
+
     function displayName(fullIdOrName){
       if(!fullIdOrName) return '';
       let base = fullIdOrName.includes(':') ? fullIdOrName.split(':').pop() : fullIdOrName;
@@ -2162,7 +2203,11 @@ const dragOverlay = document.getElementById('dragOverlay');
           ev.target.value = '';
         });
 
-    
+    loadDefaultBtn.addEventListener('click', async () => {
+      await loadDefaultHotbar();
+    });    
+
+
     downloadBtn.addEventListener('click', async ()=>{
       if(!currentNbt){
         const arr = itemsArray.map((it, i) => {
