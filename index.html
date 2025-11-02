@@ -416,7 +416,7 @@
 
         <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
         <label class="small">Book name</label>
-        <input id="bookNameInput" type="text" placeholder="Display name (optional)" style="width:100%;margin-bottom:8px;background:#0f0f0f;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:6px">
+        <input id="bookNameInput" type="text" placeholder="Display name" style="width:100%;margin-bottom:8px;background:#0f0f0f;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:6px">
 
         <label class="small" style="margin-top:4px">Lore</label>
         <textarea id="bookLoreTextarea" style="width:100%;height:40px;max-height:80px;min-height:36px;background:#0f0f0f;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:6px;font-family:monospace;resize:vertical;overflow:auto"></textarea>
@@ -482,8 +482,23 @@
     const slotCountLabel = document.getElementById('itemCountLabel');
 
     slotCountInput.addEventListener('input', ()=> {
-    slotCountLabel.textContent = slotCountInput.value;
+      slotCountLabel.textContent = slotCountInput.value;
     });
+    try {
+      slotCountLabel.style.fontSize = '14px';
+      slotCountInput.style.verticalAlign = 'middle';
+      slotCountLabel.style.display = 'inline-block';
+      slotCountLabel.style.verticalAlign = 'middle';
+      slotCountLabel.style.marginLeft = '3px';
+      slotCountLabel.style.lineHeight = '1'; 
+      slotCountLabel.style.padding = '6px 12px';
+      slotCountLabel.style.borderRadius = '6px';
+      slotCountLabel.style.position = 'relative';
+      slotCountLabel.style.top = '7px';
+      slotCountLabel.style.left = '-10px';
+    } catch(e){}
+
+
     const applySlotBtn = document.getElementById('applySlotBtn');
     const modalClose = document.getElementById('modalClose');
 
@@ -788,7 +803,48 @@ const dragOverlay = document.getElementById('dragOverlay');
         slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
       }
       slotIdDisplay.value = displayName(id);
+
+      updateSlotModalButtons();
     }
+
+
+    function updateSlotModalButtons() {
+      containerViewBtnWrap.innerHTML = '';
+
+      if ((selectedIdForApply || '').toLowerCase().includes('air')) {
+        clearSlotBtn.style.display = 'none';
+      } else {
+        clearSlotBtn.style.display = '';
+      }
+
+      const idLower = (selectedIdForApply || '').toLowerCase();
+      if (idLower.includes('writable_book') || idLower.includes('book_and_quill')) {
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn';
+        editBtn.textContent = 'Edit book';
+        editBtn.addEventListener('click', () => {
+          if (applyMode.type === 'top') {
+            const idx = applyMode.index;
+            const el = itemsArray[idx] || { id: selectedIdForApply, Count: slotCountInput.value || 1 };
+            const raw = (el && el._raw && typeof el._raw === 'object') ? el._raw : { Slot: idx, id: selectedIdForApply, Count: Number(slotCountInput.value || 1) };
+            raw.tag = raw.tag || {};
+            if (!Array.isArray(raw.tag.pages) && !Array.isArray(raw.tag.Pages)) raw.tag.pages = raw.tag.pages || [];
+            openBookModal(raw, { type: 'top', index: idx });
+          } else if (applyMode.type === 'inner') {
+            const container = applyMode.containerRaw;
+            const idx = applyMode.index;
+            const items = container && container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items) ? container.tag.BlockEntityTag.Items : [];
+            const existing = items.find(it => Number(it.Slot ?? it.slot ?? -1) === idx);
+            const raw = (existing && typeof existing === 'object') ? existing : { Slot: idx, id: selectedIdForApply, Count: Number(slotCountInput.value || 1) };
+            raw.tag = raw.tag || {};
+            if (!Array.isArray(raw.tag.pages) && !Array.isArray(raw.tag.Pages)) raw.tag.pages = raw.tag.pages || [];
+            openBookModal(raw, { type: 'inner', containerRaw: container, index: idx, existingRef: existing });
+          }
+        });
+        containerViewBtnWrap.appendChild(editBtn);
+      }
+    }
+
 
     
     function isContainer(raw){
@@ -867,12 +923,13 @@ const dragOverlay = document.getElementById('dragOverlay');
         }
 
 
-        if (typeof s.Count === 'number' && s.Count > 0) {
+        if (!(String(s.id || '').toLowerCase().includes('air')) && typeof s.Count === 'number' && s.Count > 0) {
           const countDiv = document.createElement('div');
           countDiv.className = 'count';
           countDiv.textContent = s.Count;
           el.appendChild(countDiv);
         }
+
 
         if ((s.id || '').toLowerCase().includes('air')) {
           const emptyBadge = document.createElement('div');
@@ -1137,50 +1194,29 @@ const dragOverlay = document.getElementById('dragOverlay');
 
       if (disp.Name !== undefined) {
         const rawName = disp.Name;
-        if (typeof rawName === 'string') {
-          try {
-            const parsed = JSON.parse(rawName);
-            if (parsed && typeof parsed.text === 'string') {
-              disp.Name = parsed.text;
-            } else if (typeof parsed === 'string') {
-              disp.Name = parsed;
-            } else {
-              disp.Name = rawName; 
-            }
-          } catch (e) {
-            disp.Name = rawName;
-          }
-        } else if (typeof rawName === 'object' && rawName !== null) {
+        if (typeof rawName === 'object' && rawName !== null) {
           if ('text' in rawName && typeof rawName.text === 'string') {
             disp.Name = rawName.text;
           } else {
             try { disp.Name = String(rawName); } catch(e) { disp.Name = ''; }
           }
-        } else {
+        } else if (typeof rawName !== 'string') {
           disp.Name = String(rawName);
         }
       }
-
       if (Array.isArray(disp.Lore)) {
         disp.Lore = disp.Lore.map(l => {
-          if (typeof l === 'string') {
-            try {
-              const parsed = JSON.parse(l);
-              if (parsed && typeof parsed.text === 'string') return parsed.text;
-              if (typeof parsed === 'string') return parsed;
-              return l;
-            } catch (e) {
-              return l;
-            }
-          } else if (typeof l === 'object' && l !== null) {
+          if (typeof l === 'object' && l !== null) {
             if ('text' in l && typeof l.text === 'string') return l.text;
             try { return JSON.stringify(l); } catch(e) { return String(l); }
-          } else {
+          } else if (typeof l !== 'string') {
             return String(l);
           }
+          return l;
         });
       }
     }
+
 
 
     function createPageElement(index, content){
@@ -1417,8 +1453,9 @@ const dragOverlay = document.getElementById('dragOverlay');
       const nameInputEl = document.getElementById('bookNameInput');
       const nameVal = nameInputEl ? (String(nameInputEl.value || '').trim()) : '';
       currentBookRaw.tag.display = currentBookRaw.tag.display || {};
+
       if (nameVal) {
-        currentBookRaw.tag.display.Name = nameVal;
+        currentBookRaw.tag.display.Name = JSON.stringify({ text: nameVal });
       } else {
         if (currentBookRaw.tag.display && ('Name' in currentBookRaw.tag.display)) {
           delete currentBookRaw.tag.display.Name;
@@ -1431,7 +1468,7 @@ const dragOverlay = document.getElementById('dragOverlay');
         const loreLines = loreRawText.split(/\r?\n/).map(l => l.trim());
         if (loreLines.length && loreLines.some(l => l !== '')) {
           currentBookRaw.tag.display = currentBookRaw.tag.display || {};
-          currentBookRaw.tag.display.Lore = loreLines.map(l => String(l));
+          currentBookRaw.tag.display.Lore = loreLines.map(l => serializeLoreEntry(l));
         } else {
           if (currentBookRaw.tag && currentBookRaw.tag.display && 'Lore' in currentBookRaw.tag.display) {
             delete currentBookRaw.tag.display.Lore;
@@ -1443,6 +1480,7 @@ const dragOverlay = document.getElementById('dragOverlay');
         }
       }
 
+
       if (currentBookContext && currentBookContext.type === 'top') {
         const idx = currentBookContext.index;
         itemsArray[idx] = itemsArray[idx] || { id: 'minecraft:air', Count: 1, Slot: idx, _raw: {} };
@@ -1452,19 +1490,53 @@ const dragOverlay = document.getElementById('dragOverlay');
         renderGrid();
       } else if (currentBookContext && currentBookContext.type === 'inner') {
         const containerRaw = currentBookContext.containerRaw || currentBookContext.parentRaw || null;
-        const slotIndex = currentBookContext.index;
-        if (containerRaw && containerRaw.tag && containerRaw.tag.BlockEntityTag && Array.isArray(containerRaw.tag.BlockEntityTag.Items)) {
-          containerRaw.tag.BlockEntityTag.Items = containerRaw.tag.BlockEntityTag.Items.filter(it => Number(it.Slot ?? it.slot ?? -1) !== slotIndex);
-          const clone = JSON.parse(JSON.stringify(currentBookRaw));
-          clone.Slot = slotIndex;
-          containerRaw.tag.BlockEntityTag.Items.push(clone);
-        } else if (containerRaw) {
+        const slotIndex = Number(currentBookContext.index ?? -1);
+
+        if (!containerRaw) {
+        } else {
           ensureContainerStructure(containerRaw);
-          containerRaw.tag.BlockEntityTag.Items = containerRaw.tag.BlockEntityTag.Items.filter(it => Number(it.Slot ?? it.slot ?? -1) !== slotIndex);
-          const clone = JSON.parse(JSON.stringify(currentBookRaw));
-          clone.Slot = slotIndex;
-          containerRaw.tag.BlockEntityTag.Items.push(clone);
+
+          const items = containerRaw.tag.BlockEntityTag.Items = containerRaw.tag.BlockEntityTag.Items || [];
+
+          const bookSrc = currentBookRaw || {};
+          const normalizedEntry = {
+            Slot: slotIndex,
+            id: String(bookSrc.id || bookSrc._id || 'minecraft:writable_book'),
+            Count: Number(bookSrc.Count ?? bookSrc.count ?? 1)
+          };
+          if (bookSrc.tag && typeof bookSrc.tag === 'object' && Object.keys(bookSrc.tag).length > 0) {
+            normalizedEntry.tag = JSON.parse(JSON.stringify(bookSrc.tag));
+          }
+
+          const existingIdx = items.findIndex(it => Number(it.Slot ?? it.slot ?? -1) === slotIndex);
+          if (existingIdx !== -1) {
+            const existing = items[existingIdx];
+            existing.id = normalizedEntry.id;
+            existing.Count = normalizedEntry.Count;
+            existing.Slot = slotIndex;
+            if (normalizedEntry.tag) {
+              existing.tag = normalizedEntry.tag;
+            } else {
+              if (existing.tag) delete existing.tag;
+            }
+            items[existingIdx] = existing;
+          } else {
+            items.push(normalizedEntry);
+          }
+
+          for (let h = 0; h < itemsArray.length; h++) {
+            const top = itemsArray[h];
+            if (!top || !top._raw) continue;
+            if (top._raw === containerRaw) {
+              break;
+            }
+            if (top._raw.tag && top._raw.tag.BlockEntityTag && top._raw.tag.BlockEntityTag.Items === containerRaw.tag.BlockEntityTag.Items) {
+              top._raw = containerRaw;
+              break;
+            }
+          }
         }
+
         renderCurrentContainer();
         renderGrid();
       }
@@ -1502,18 +1574,61 @@ const dragOverlay = document.getElementById('dragOverlay');
           itemsArray[idx] = {id: idToApply, Count: count, Slot: idx, _raw: newRaw};
         }
         renderGrid();
-      } else if(applyMode.type === 'inner'){
+      } else if (applyMode.type === 'inner') {
         const container = applyMode.containerRaw;
         const slotIndex = applyMode.index;
-        let itemsArr = container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items) ? container.tag.BlockEntityTag.Items.slice() : [];
-        itemsArr = itemsArr.filter(it => Number(it.Slot ?? it.slot ?? -1) !== slotIndex);
-        if(idToApply !== 'minecraft:air' && count > 0) itemsArr.push({Slot: slotIndex, id: idToApply, Count: count});
-        container.tag = container.tag || {};
-        container.tag.BlockEntityTag = container.tag.BlockEntityTag || {};
-        container.tag.BlockEntityTag.Items = itemsArr;
+        if (!container) { 
+        } else {
+          ensureContainerStructure(container);
+
+          const existingItems = container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items)
+            ? container.tag.BlockEntityTag.Items
+            : [];
+
+          const preservedOthers = existingItems.filter(it => Number(it.Slot ?? it.slot ?? -1) !== slotIndex);
+
+          if (idToApply !== 'minecraft:air' && count > 0) {
+            const existing = existingItems.find(it => Number(it.Slot ?? it.slot ?? -1) === slotIndex);
+            let newEntry;
+            if (existing && typeof existing === 'object') {
+              newEntry = JSON.parse(JSON.stringify(existing));
+              newEntry.Slot = slotIndex;
+              newEntry.id = idToApply;
+              newEntry.Count = Number(count);
+            } else {
+              newEntry = { Slot: slotIndex, id: idToApply, Count: Number(count) };
+            }
+            if ((!newEntry.tag || Object.keys(newEntry.tag).length === 0) && currentBookRaw && currentBookContext && currentBookContext.type === 'inner' && Number(currentBookContext.index) === slotIndex) {
+              if (currentBookRaw.tag && typeof currentBookRaw.tag === 'object' && Object.keys(currentBookRaw.tag).length > 0) {
+                newEntry.tag = JSON.parse(JSON.stringify(currentBookRaw.tag));
+              }
+            }
+
+            preservedOthers.push(newEntry);
+          } else {
+          }
+
+          container.tag = container.tag || {};
+          container.tag.BlockEntityTag = container.tag.BlockEntityTag || {};
+          container.tag.BlockEntityTag.Items = preservedOthers;
+
+          for (let h = 0; h < itemsArray.length; h++) {
+            const top = itemsArray[h];
+            if (!top || !top._raw) continue;
+            if (top._raw === container) {
+              break;
+            }
+            if (top._raw.tag && top._raw.tag.BlockEntityTag && top._raw.tag.BlockEntityTag.Items === container.tag.BlockEntityTag.Items) {
+              top._raw = container;
+              break;
+            }
+          }
+        }
+
         renderCurrentContainer();
         renderGrid();
       }
+
       closeSlotModal();
       selectedIdForApply = 'minecraft:air';
     });
@@ -1542,45 +1657,14 @@ const dragOverlay = document.getElementById('dragOverlay');
       slotCountInput.value = el.Count ?? 1;
       slotCountLabel.textContent = slotCountInput.value;
 
+      updateSlotModalButtons();
 
 
-      containerViewBtnWrap.innerHTML = '';
-
-      
-        if (isContainerId(el.id)){
-          const btn = document.createElement('button');
-          btn.className = 'btn small';
-          btn.textContent = 'View container';
-          btn.addEventListener('click', ()=> {
-              closeSlotModal();
-              const raw = el._raw && typeof el._raw === 'object' ? el._raw : {Slot:slotIndex, id: el.id, Count: el.Count};
-              ensureContainerStructure(raw);
-              openContainerModal(raw);
-        });
-        containerViewBtnWrap.appendChild(btn);
-        }
-
-        if ((selectedIdForApply || '').toLowerCase().includes('air')) {
-          clearSlotBtn.style.display = 'none';
-        } else {
-          clearSlotBtn.style.display = '';
-        }
-
-        const idLower = (el.id || '').toLowerCase();
-        if (idLower.includes('writable_book') || idLower.includes('book_and_quill') || idLower.includes('book')) {
-        const customBtn = document.createElement('button');
-        customBtn.className = 'btn';
-        customBtn.textContent = 'Edit book';
-        customBtn.disabled = true;
-        customBtn.title = "Currently broken, please check back later";
-        customBtn.addEventListener('click', (e) => {
-            const raw = el._raw && typeof el._raw === 'object' ? el._raw : {Slot: slotIndex, id: el.id, Count: el.Count};
-            raw.tag = raw.tag || {};
-            if (!Array.isArray(raw.tag.pages) && !Array.isArray(raw.tag.Pages)) raw.tag.pages = raw.tag.pages || [];
-            openBookModal(raw, { type: 'top', index: slotIndex });
-        });
-        containerViewBtnWrap.appendChild(customBtn);
-        }
+      if ((selectedIdForApply || '').toLowerCase().includes('air')) {
+        clearSlotBtn.style.display = 'none';
+      } else {
+        clearSlotBtn.style.display = '';
+      }
 
 
       slotModal.classList.add('show');
@@ -1841,14 +1925,12 @@ const dragOverlay = document.getElementById('dragOverlay');
               const customBtnInner = document.createElement('button');
               customBtnInner.className = 'btn';
               customBtnInner.textContent = 'Edit book';
-              customBtnInner.disabled = true;
-              customBtnInner.title = "Currently broken, please check back later";
 
               customBtnInner.addEventListener('click', () => {
-                const rawBook = (obj && typeof obj === 'object') ? obj : {Slot: i, id: obj?.id, Count: obj?.Count};
+                const rawBook = (obj && typeof obj === 'object') ? obj : { Slot: i, id: obj?.id, Count: obj?.Count };
                 rawBook.tag = rawBook.tag || {};
                 if (!Array.isArray(rawBook.tag.pages) && !Array.isArray(rawBook.tag.Pages)) rawBook.tag.pages = rawBook.tag.pages || [];
-                openBookModal(rawBook, { type: 'inner', containerRaw: raw, index: i });
+                openBookModal(rawBook, { type: 'inner', containerRaw: raw, index: i, existingRef: obj });
               });
               containerViewBtnWrap.appendChild(customBtnInner);
             }
