@@ -136,6 +136,19 @@ if (containerNameInput) {
 
 let currentNbt = null;
 let itemsArray = new Array(9).fill(null).map((_,i)=>({id:'minecraft:air',Count:1,Slot:i,_raw:{id:'minecraft:air',Count:1}}));
+
+let currentHotbarIndex = 0; 
+let allHotbars = {}; 
+
+for (let h = 0; h < 9; h++) {
+  allHotbars[h] = new Array(9).fill(null).map((_, i) => ({
+    id: 'minecraft:air',
+    Count: 1,
+    Slot: i,
+    _raw: { id: 'minecraft:air', Count: 1 }
+  }));
+}
+
 let hotbarRef = null;
 let activeSlot = 0;
 let dragFrom = null;
@@ -160,6 +173,84 @@ if (githubBtn) {
     setTimeout(() => githubBtn.classList.remove('git-anim'), 700);
     });
 }
+
+const hotbarDropdownBtn = document.getElementById('hotbarDropdownBtn');
+const hotbarDropdown = document.getElementById('hotbarDropdown');
+const hotbarOptions = document.querySelectorAll('.hotbar-option');
+
+const hotbarTooltip = document.querySelector('.hotbar-tooltip');
+
+if (hotbarDropdownBtn && hotbarDropdown) {
+  hotbarDropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = hotbarDropdown.style.display === 'block';
+    hotbarDropdown.style.display = isVisible ? 'none' : 'block';
+    
+    if (hotbarTooltip) {
+      if (hotbarDropdown.style.display === 'block') {
+        hotbarTooltip.style.opacity = '0';
+        hotbarTooltip.style.pointerEvents = 'none';
+      } else {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!hotbarDropdownBtn.contains(e.target) && !hotbarDropdown.contains(e.target)) {
+      hotbarDropdown.style.display = 'none';
+      
+      if (hotbarTooltip) {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
+    }
+  });
+
+  hotbarOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const hotbarIndex = parseInt(option.dataset.hotbar);
+      switchToHotbar(hotbarIndex);
+      hotbarDropdown.style.display = 'none';
+      if (hotbarTooltip) {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
+    });
+  });
+}
+
+function updateHotbarDropdownUI() {
+  hotbarOptions.forEach(option => {
+    const index = parseInt(option.dataset.hotbar);
+    if (index === currentHotbarIndex) {
+      option.classList.add('active');
+    } else {
+      option.classList.remove('active');
+    }
+  });
+  
+  if (hotbarDropdownBtn) {
+    hotbarDropdownBtn.textContent = `Hotbar ${currentHotbarIndex + 1} ▼`;
+  }
+}
+
+function switchToHotbar(index) {
+  if (index < 0 || index > 8) return;
+  
+  allHotbars[currentHotbarIndex] = JSON.parse(JSON.stringify(itemsArray));
+  
+  currentHotbarIndex = index;
+  itemsArray = JSON.parse(JSON.stringify(allHotbars[index]));
+  
+  renderGrid();
+  updateHotbarDropdownUI();
+  closeSlotModal();
+  closeContainerModal();
+}
+
+updateHotbarDropdownUI();
 
 
 let iconList = [];
@@ -274,66 +365,74 @@ document.addEventListener('drop', async (e) => {
 async function handleFileLoad(file) {
     const ab = await file.arrayBuffer();
     try {
-    const parsed = await NBT.read(ab);
-    currentNbt = parsed;
-    const found = findHotbarArray(parsed);
-    if (found && Array.isArray(found)) {
-        const ref = findArrayRef(parsed, found) || {parent: parsed, key: 'HotbarArray'};
-        hotbarRef = {parent: ref.parent, key: ref.key, array: found};
-        itemsArray = new Array(9).fill(null).map((_, idx) => {
-        const el = found[idx];
-        if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
-        const slot = (el.Slot ?? el.slot ?? idx);
-        const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
-        const Count = Number(el.Count ?? el.count ?? 1);
-        return {id, Count, Slot: Number(slot), _raw: el};
-        });
-        renderGrid();
-    } else {
-        currentNbt = parsed;
-        alert('Could not auto-locate hotbar array — file loaded but auto-mapping failed. Try exporting/formatting to the expected structure.');
-    }
+      const parsed = await NBT.read(ab);
+      currentNbt = parsed;
+      
+      if (parsed.data && typeof parsed.data === 'object') {
+        for (let h = 0; h < 9; h++) {
+          const hotbarKey = String(h);
+          if (Array.isArray(parsed.data[hotbarKey])) {
+            allHotbars[h] = new Array(9).fill(null).map((_, idx) => {
+              const el = parsed.data[hotbarKey][idx];
+              if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
+              const slot = (el.Slot ?? el.slot ?? idx);
+              const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
+              const Count = Number(el.Count ?? el.count ?? 1);
+              return {id, Count, Slot: Number(slot), _raw: el};
+            });
+          }
+        }
+      }
+      
+      currentHotbarIndex = 0;
+      itemsArray = JSON.parse(JSON.stringify(allHotbars[0]));
+      renderGrid();
+      updateHotbarDropdownUI();
     } catch (err) {
-    console.error(err);
-    alert('Error parsing NBT file: ' + err.message);
+      console.error(err);
+      alert('Error parsing NBT file: ' + err.message);
     }
 }
 
 async function loadDefaultHotbar() {
     try {
-    const response = await fetch('default/hotbar.nbt');
-    if (!response.ok) {
+      const response = await fetch('default/hotbar.nbt');
+      if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-    }
-    const ab = await response.arrayBuffer();
-    
-    try {
+      }
+      const ab = await response.arrayBuffer();
+      
+      try {
         const parsed = await NBT.read(ab);
         currentNbt = parsed;
-        const found = findHotbarArray(parsed);
-        if (found && Array.isArray(found)) {
-        const ref = findArrayRef(parsed, found) || {parent: parsed, key: 'HotbarArray'};
-        hotbarRef = {parent: ref.parent, key: ref.key, array: found};
-        itemsArray = new Array(9).fill(null).map((_, idx) => {
-            const el = found[idx];
-            if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
-            const slot = (el.Slot ?? el.slot ?? idx);
-            const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
-            const Count = Number(el.Count ?? el.count ?? 1);
-            return {id, Count, Slot: Number(slot), _raw: el};
-        });
-        renderGrid();
-        } else {
-        currentNbt = parsed;
-        alert('Could not auto-locate hotbar array — file loaded but auto-mapping failed. Try exporting/formatting to the expected structure.');
+        
+        if (parsed.data && typeof parsed.data === 'object') {
+          for (let h = 0; h < 9; h++) {
+            const hotbarKey = String(h);
+            if (Array.isArray(parsed.data[hotbarKey])) {
+              allHotbars[h] = new Array(9).fill(null).map((_, idx) => {
+                const el = parsed.data[hotbarKey][idx];
+                if (!el) return {id:'minecraft:air',Count:1,Slot:idx,_raw:{id:'minecraft:air',Count:1}};
+                const slot = (el.Slot ?? el.slot ?? idx);
+                const id = (typeof el.id === 'string' && el.id) || (el.id && el.id.value) || (el.tag && el.tag.BlockEntityTag && el.tag.BlockEntityTag.id) || 'minecraft:air';
+                const Count = Number(el.Count ?? el.count ?? 1);
+                return {id, Count, Slot: Number(slot), _raw: el};
+              });
+            }
+          }
         }
-    } catch (err) {
+        
+        currentHotbarIndex = 0;
+        itemsArray = JSON.parse(JSON.stringify(allHotbars[0]));
+        renderGrid();
+        updateHotbarDropdownUI();
+      } catch (err) {
         console.error(err);
         alert('Error parsing NBT file: ' + err.message);
-    }
+      }
     } catch (fetchErr) {
-    console.error('Failed to load default hotbar:', fetchErr);
-    alert('Could not load default hotbar file. Make sure default/hotbar.nbt exists.');
+      console.error('Failed to load default hotbar:', fetchErr);
+      alert('Could not load default hotbar file. Make sure default/hotbar.nbt exists.');
     }
 }
 
@@ -725,6 +824,10 @@ function findArrayRef(root, target){
 
 
 function renderGrid(){
+    if (itemsArray && itemsArray.length === 9) {
+      allHotbars[currentHotbarIndex] = JSON.parse(JSON.stringify(itemsArray));
+    }
+
     grid.innerHTML = '';
     for(let i=0;i<9;i++){
     const s = itemsArray[i] || {id:'minecraft:air',Count:1,Slot:i,_raw:{id:'minecraft:air',Count:1}};
@@ -1805,81 +1908,72 @@ loadDefaultBtn.addEventListener('click', async () => {
 
 
 downloadBtn.addEventListener('click', async ()=>{
+    allHotbars[currentHotbarIndex] = JSON.parse(JSON.stringify(itemsArray));
+    
     if(!currentNbt){
-    const arr = itemsArray.map((it, i) => {
-        const base = (it && it._raw && typeof it._raw === 'object') ? JSON.parse(JSON.stringify(it._raw)) : { id: it.id ?? 'minecraft:air', Count: it.Count ?? 0 };
-        base.Count = Number(it.Count ?? base.Count ?? 0);
-        if ('Slot' in base) delete base.Slot;
-        if ('slot' in base) delete base.slot;
-
-        simplifyDisplayForWrite(base);
-
-
-        return base;
-    });
-
-
-    const root = { '0': arr, rootName: '', endian: 'big' };
-    try {
+      const dataObj = {};
+      for (let h = 0; h < 9; h++) {
+        dataObj[String(h)] = allHotbars[h].map((it, i) => {
+          const base = (it && it._raw && typeof it._raw === 'object') ? JSON.parse(JSON.stringify(it._raw)) : { id: it.id ?? 'minecraft:air', Count: it.Count ?? 0 };
+          base.Count = Number(it.Count ?? base.Count ?? 0);
+          if ('Slot' in base) delete base.Slot;
+          if ('slot' in base) delete base.slot;
+          simplifyDisplayForWrite(base);
+          return base;
+        });
+      }
+      
+      const root = { data: dataObj, rootName: '', endian: 'big' };
+      try {
         const bin = await NBT.write(root);
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-    } catch(e) { alert('Failed to write: ' + e.message); console.error(e); }
-    return;
+      } catch(e) { alert('Failed to write: ' + e.message); console.error(e); }
+      return;
     }
-    if(hotbarRef && hotbarRef.parent){
-    const newArr = [];
-    for(let i=0;i<itemsArray.length;i++){
-        const it = itemsArray[i];
-        if(it && it._raw && typeof it._raw === 'object'){
-        it._raw.id = it.id ?? it._raw.id;
-        it._raw.Count = it.Count ?? it._raw.Count ?? 0;
-        it._raw.Slot = i;
-
-        simplifyDisplayForWrite(it._raw);
-
-
-        newArr.push(it._raw);
-        } else {
-        newArr.push({Slot:i, id: it?.id ?? 'minecraft:air', Count: it?.Count ?? 0});
-        }
-    }
-
-    hotbarRef.parent[hotbarRef.key] = newArr;
-    try{
+    
+    if (currentNbt.data && typeof currentNbt.data === 'object') {
+      for (let h = 0; h < 9; h++) {
+        const newArr = allHotbars[h].map((it, i) => {
+          if(it && it._raw && typeof it._raw === 'object'){
+            it._raw.id = it.id ?? it._raw.id;
+            it._raw.Count = it.Count ?? it._raw.Count ?? 0;
+            it._raw.Slot = i;
+            simplifyDisplayForWrite(it._raw);
+            return it._raw;
+          } else {
+            return {Slot:i, id: it?.id ?? 'minecraft:air', Count: it?.Count ?? 0};
+          }
+        });
+        currentNbt.data[String(h)] = newArr;
+      }
+      
+      try{
         const bin = await NBT.write(currentNbt);
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-    }catch(e){ alert('Failed to write: '+e.message); console.error(e); }
-    } else {
-    const arr = itemsArray.map((it, i) => {
-        const base = (it && it._raw && typeof it._raw === 'object') ? JSON.parse(JSON.stringify(it._raw)) : { id: it.id ?? 'minecraft:air', Count: it.Count ?? 0 };
-        base.Count = Number(it.Count ?? base.Count ?? 0);
-        if ('Slot' in base) delete base.Slot;
-        if ('slot' in base) delete base.slot;
-
-        simplifyDisplayForWrite(base);
-
-
-        return base;
-    });
-
-    const root = { '0': arr, rootName: '', endian: 'big' };
-    try {
-        const bin = await NBT.write(root);
-        const blob = new Blob([bin], {type:'application/octet-stream'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-    } catch(e) { alert('Failed to write: ' + e.message); console.error(e); }
+      }catch(e){ alert('Failed to write: '+e.message); console.error(e); }
     }
 });
 
 resetBtn.addEventListener('click', ()=>{
-    itemsArray = new Array(9).fill(null).map((_,i)=>({id:'minecraft:air',Count:1,Slot:i,_raw:{id:'minecraft:air',Count:1}}));
-    currentNbt = null; hotbarRef = null;
+    for (let h = 0; h < 9; h++) {
+      allHotbars[h] = new Array(9).fill(null).map((_, i) => ({
+        id: 'minecraft:air',
+        Count: 1,
+        Slot: i,
+        _raw: { id: 'minecraft:air', Count: 1 }
+      }));
+    }
+    
+    currentHotbarIndex = 0;
+    itemsArray = JSON.parse(JSON.stringify(allHotbars[0]));
+    currentNbt = null;
+    hotbarRef = null;
     renderGrid();
+    updateHotbarDropdownUI();
 });
 
 
