@@ -337,7 +337,7 @@ border-radius: 6px;
   position: absolute;
   top: calc(100% + 4px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-4px);
   background: linear-gradient(180deg, #1f1f1f, #171717);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
@@ -345,6 +345,13 @@ border-radius: 6px;
   z-index: 1000;
   min-width: 140px;
   overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hotbar-dropdown.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .hotbar-option {
@@ -366,10 +373,9 @@ border-radius: 6px;
 }
 .hotbar-tooltip {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, #2a2a2a, #1f1f1f);
+  top: calc(100% - 30px);
+  transform: translate(calc(-100% - 25px), -15px); 
+  background: linear-gradient(180deg, #2a2a2a, #1f1f1f); 
   color: var(--text);
   padding: 12px 16px;
   border-radius: 8px;
@@ -377,22 +383,44 @@ border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   font-size: 0.85rem;
   line-height: 1.5;
-  width: 550px;
-  min-width: 550px;
-  z-index: 1001;
+  width: 450px;
+  max-width: calc(100vw - 32px);    
+  z-index: 11000;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0s ease;
-  transition-delay: 0s;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s cubic-bezier(.25,.8,.25,1),
+    visibility 0s linear 0.25s;
   white-space: normal;
   text-align: left;
+  display: block;
+  will-change: transform, opacity;
+}
+@keyframes tooltip-diagonal-in {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-100% - 5px), -25px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(calc(-100% - 15px), 0);
+  }
 }
 
-#hotbarDropdownBtn:hover + .hotbar-tooltip {
+.hotbar-tooltip.show {
+  animation: tooltip-diagonal-in 0.25s cubic-bezier(.25,.8,.25,1) forwards;
+}
+
+
+
+.hotbar-tooltip.show {
   opacity: 1;
+  visibility: visible;
+  transform: translate(calc(-100% - 15px), 0); 
   pointer-events: auto;
-  transition: opacity 0.3s ease;
-  transition-delay: 0.5s;
+  transition-delay: 0s;
 }
 
 .hotbar-tooltip code {
@@ -407,4 +435,25 @@ border-radius: 6px;
 .hotbar-tooltip strong {
   color: var(--accent);
   font-weight: 600;
+}
+
+.success-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(64, 64, 64, 1);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.success-notification.show {
+  opacity: 1;
 }
