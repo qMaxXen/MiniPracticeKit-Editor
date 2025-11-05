@@ -439,11 +439,6 @@ border-radius: 6px;
 
 .hotbar-tooltip.show {
   animation: tooltip-diagonal-in 0.25s cubic-bezier(.25,.8,.25,1) forwards;
-}
-
-
-
-.hotbar-tooltip.show {
   opacity: 1;
   visibility: visible;
   transform: translate(calc(-100% - 15px), 0); 
