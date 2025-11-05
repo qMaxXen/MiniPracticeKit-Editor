@@ -183,38 +183,28 @@ const hotbarTooltip = document.querySelector('.hotbar-tooltip');
 if (hotbarDropdownBtn && hotbarDropdown) {
   hotbarDropdownBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isVisible = hotbarDropdown.classList.contains('show');
-
-    if (isVisible) {
-
-      hotbarDropdown.classList.remove('show');
-
-      if (hotbarTooltip) hotbarTooltip.classList.remove('show');
-      setTimeout(() => {
-        hotbarDropdown.style.display = 'none';
-      }, 200);
-    } else {
-      hotbarDropdown.style.display = 'block';
-      setTimeout(() => {
-        hotbarDropdown.classList.add('show');
-
-
-        if (hotbarTooltip && hotbarDropdownBtn.matches(':hover')) {
-          hotbarTooltip.classList.add('show');
-        } else if (hotbarTooltip) {
-          hotbarTooltip.classList.remove('show');
-        }
-      }, 10);
+    const isVisible = hotbarDropdown.style.display === 'block';
+    hotbarDropdown.style.display = isVisible ? 'none' : 'block';
+    
+    if (hotbarTooltip) {
+      if (hotbarDropdown.style.display === 'block') {
+        hotbarTooltip.style.opacity = '0';
+        hotbarTooltip.style.pointerEvents = 'none';
+      } else {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
     }
   });
 
   document.addEventListener('click', (e) => {
     if (!hotbarDropdownBtn.contains(e.target) && !hotbarDropdown.contains(e.target)) {
-      hotbarDropdown.classList.remove('show');
-      if (hotbarTooltip) hotbarTooltip.classList.remove('show');
-      setTimeout(() => {
-        hotbarDropdown.style.display = 'none';
-      }, 200);
+      hotbarDropdown.style.display = 'none';
+      
+      if (hotbarTooltip) {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
     }
   });
 
@@ -222,36 +212,14 @@ if (hotbarDropdownBtn && hotbarDropdown) {
     option.addEventListener('click', () => {
       const hotbarIndex = parseInt(option.dataset.hotbar);
       switchToHotbar(hotbarIndex);
-      hotbarDropdown.classList.remove('show');
-      if (hotbarTooltip) hotbarTooltip.classList.remove('show');
-      setTimeout(() => {
-        hotbarDropdown.style.display = 'none';
-      }, 200);
+      hotbarDropdown.style.display = 'none';
+      if (hotbarTooltip) {
+        hotbarTooltip.style.opacity = '';
+        hotbarTooltip.style.pointerEvents = '';
+      }
     });
   });
 }
-
-if (hotbarDropdownBtn && hotbarTooltip) {
-  hotbarDropdownBtn.addEventListener('mouseenter', () => {
-    if (hotbarDropdown.classList.contains('show')) {
-      hotbarTooltip.classList.add('show');
-    }
-  });
-
-  hotbarDropdownBtn.addEventListener('mouseleave', () => {
-    hotbarTooltip.classList.remove('show');
-  });
-
-  hotbarDropdownBtn.addEventListener('focus', () => {
-    if (hotbarDropdown.classList.contains('show')) {
-      hotbarTooltip.classList.add('show');
-    }
-  });
-  hotbarDropdownBtn.addEventListener('blur', () => {
-    hotbarTooltip.classList.remove('show');
-  });
-}
-
 
 function updateHotbarDropdownUI() {
   hotbarOptions.forEach(option => {
@@ -326,21 +294,7 @@ async function loadIconsIndex(){
     iconList = Array.from(new Set(curated.map(s=>s)));
     renderPicker(iconList);
 }
-
 loadIconsIndex();
-
-function showSuccessNotification(message) {
-  const notification = document.getElementById('successNotification');
-  if (!notification) return;
-  
-  notification.textContent = message;
-  notification.classList.add('show');
-  
-  setTimeout(() => {
-    notification.classList.remove('show');
-  }, 1500);
-}
-
 
 const dragOverlay = document.getElementById('dragOverlay');
 let dragCounter = 0; 
@@ -434,7 +388,6 @@ async function handleFileLoad(file) {
       itemsArray = JSON.parse(JSON.stringify(allHotbars[0]));
       renderGrid();
       updateHotbarDropdownUI();
-      showSuccessNotification('Successfully loaded your hotbar.nbt!');
     } catch (err) {
       console.error(err);
       alert('Error parsing NBT file: ' + err.message);
@@ -556,31 +509,23 @@ copySlotBtn.addEventListener('click', () => {
     try {
     if (ctx.type === 'top') {
         const idx = Number(ctx.index ?? activeSlot);
-        const currentCount = Number(slotCountInput.value || 1);
-        const currentId = selectedIdForApply || 'minecraft:air';
-        const top = itemsArray[idx] || { id: currentId, Count: currentCount, _raw: { id: currentId, Count: currentCount } };
-        const rawCopy = (top._raw && typeof top._raw === 'object') ? JSON.parse(JSON.stringify(top._raw)) : { id: currentId, Count: currentCount };
-        rawCopy.id = currentId;
-        rawCopy.Count = currentCount;
+        const top = itemsArray[idx] || { id: 'minecraft:air', Count: 1, _raw: { id: 'minecraft:air', Count: 1 } };
+        const rawCopy = (top._raw && typeof top._raw === 'object') ? JSON.parse(JSON.stringify(top._raw)) : { id: top.id || 'minecraft:air', Count: Number(top.Count ?? 1) };
         delete rawCopy.Slot;
         delete rawCopy.slot;
         slotClipboard = { source: 'top', data: rawCopy };
     } else {
-            const container = ctx.containerRaw;
-            const slotIndex = Number(ctx.index);
-            const currentCount = Number(slotCountInput.value || 1);
-            const currentId = selectedIdForApply || 'minecraft:air';
-            let obj = null;
-            if (container && container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items)) {
-            obj = container.tag.BlockEntityTag.Items.find(it => Number(it.Slot ?? it.slot ?? -1) === slotIndex) || null;
-            }
-            const rawCopy = (obj && typeof obj === 'object') ? JSON.parse(JSON.stringify(obj)) : { id: currentId, Count: currentCount };
-            rawCopy.id = currentId;
-            rawCopy.Count = currentCount;
-            delete rawCopy.Slot;
-            delete rawCopy.slot;
-            slotClipboard = { source: 'inner', data: rawCopy };
+        const container = ctx.containerRaw;
+        const slotIndex = Number(ctx.index);
+        let obj = null;
+        if (container && container.tag && container.tag.BlockEntityTag && Array.isArray(container.tag.BlockEntityTag.Items)) {
+        obj = container.tag.BlockEntityTag.Items.find(it => Number(it.Slot ?? it.slot ?? -1) === slotIndex) || null;
         }
+        const rawCopy = (obj && typeof obj === 'object') ? JSON.parse(JSON.stringify(obj)) : { id: 'minecraft:air', Count: 1 };
+        delete rawCopy.Slot;
+        delete rawCopy.slot;
+        slotClipboard = { source: 'inner', data: rawCopy };
+    }
     updateCopyPasteButtons();
     } catch (e) {
     console.error('Copy failed', e);
@@ -1957,6 +1902,10 @@ fileInput.addEventListener('change', async (ev) => {
         ev.target.value = '';
     });
 
+loadDefaultBtn.addEventListener('click', async () => {
+    await loadDefaultHotbar();
+});    
+
 
 downloadBtn.addEventListener('click', async ()=>{
     allHotbars[currentHotbarIndex] = JSON.parse(JSON.stringify(itemsArray));
@@ -1980,7 +1929,6 @@ downloadBtn.addEventListener('click', async ()=>{
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-        showSuccessNotification('Successfully downloaded hotbar.nbt!');
       } catch(e) { alert('Failed to write: ' + e.message); console.error(e); }
       return;
     }
@@ -2006,7 +1954,6 @@ downloadBtn.addEventListener('click', async ()=>{
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-        showSuccessNotification('Successfully downloaded hotbar.nbt!');
       }catch(e){ alert('Failed to write: '+e.message); console.error(e); }
     }
 });
@@ -2027,15 +1974,10 @@ resetBtn.addEventListener('click', ()=>{
     hotbarRef = null;
     renderGrid();
     updateHotbarDropdownUI();
-    loadDefaultHotbar();
-    showSuccessNotification('Successfully reset to the default hotbar.nbt!');
 });
 
 
 renderGrid();
-
-loadDefaultHotbar();
-showSuccessNotification('Successfully loaded the default hotbar.nbt!');
 
 slotModal.addEventListener('click', (ev) => {
 if (ev.target === slotModal) closeSlotModal();
