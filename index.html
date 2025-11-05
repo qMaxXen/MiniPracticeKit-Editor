@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MPK Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=1.0.0">
 </head>
 <body>
+  <div id="successNotification" class="success-notification"></div>
   <header>
     <h1>MiniPracticeKit Editor</h1>
 
@@ -39,7 +40,6 @@
       <div style="display:flex; align-items:center; gap:6px;">
         <label class="btn gray-btn" for="file">Open hotbar.nbt</label>
         <input id="file" type="file" accept=".nbt,.dat,.json" style="display:none" />
-        <button id="loadDefault" class="btn gray-btn">Load default</button>
         <button id="download" class="btn gray-btn">Download hotbar.nbt</button>
         <button id="reset" class="btn ghost">Reset</button>
       </div>
@@ -89,11 +89,13 @@
             </div>
 
             <div style="width:220px; display:flex; gap:8px; align-items:center;">
-              <div style="flex:1">
+              <div class="count-row vertical">
                 <label class="small">Count</label>
-                <input id="itemCountInput" type="range" min="1" max="64" value="1" />
+                <div class="count-controls" style="width:100%;">
+                  <input id="itemCountInput" type="range" min="1" max="64" value="1">
+                  <span id="itemCountLabel" class="count-badge-inline">1</span>
+                </div>
               </div>
-              <div id="itemCountLabel" class="count-badge-inline" style="text-align:center;">1</div>
             </div>
           </div>
 
@@ -200,6 +202,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="script.js?v=1.0.0"></script>
 </body>
 </html>
