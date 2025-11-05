@@ -296,6 +296,19 @@ let bookCurrentPage = 0;
 let currentBookRaw = null;
 let currentBookContext = null; 
 
+const iconCache = new Map();
+
+function preloadIcon(iconName) {
+  if (iconCache.has(iconName)) return iconCache.get(iconName);
+  
+  const img = new Image();
+  img.src = iconsPath + iconName + '.png';
+  iconCache.set(iconName, img);
+  return img;
+}
+
+preloadIcon('air');
+
 
 async function loadIconsIndex(){
     const candidates = [
@@ -891,10 +904,39 @@ function renderGrid(){
     el.innerHTML = `<div class="label">#${i + 1}</div>`;
 
     if (s.id && !(s.id.toLowerCase().includes('air'))) {
-        const imgEl = document.createElement('img');
-        imgEl.src = iconsPath + s.id.split(':').pop() + '.png';
-        imgEl.draggable = false;
-        el.appendChild(imgEl);
+        const iconName = s.id.split(':').pop();
+        const cachedImg = iconCache.get(iconName);
+
+        if (cachedImg && cachedImg.complete) {
+          const imgEl = cachedImg.cloneNode();
+          imgEl.draggable = false;
+          imgEl.classList.add('loaded');
+          el.appendChild(imgEl);
+        } else {
+          const spinner = document.createElement('div');
+          spinner.className = 'loading-spinner';
+          el.appendChild(spinner);
+
+          const imgEl = document.createElement('img');
+          imgEl.src = iconsPath + iconName + '.png';
+          imgEl.draggable = false;
+          
+          imgEl.addEventListener('load', () => {
+            spinner.remove();
+            imgEl.classList.add('loaded');
+            if (!iconCache.has(iconName)) {
+              preloadIcon(iconName);
+            }
+          });
+          
+          imgEl.addEventListener('error', () => {
+            spinner.remove();
+            imgEl.src = iconsPath + 'air.png';
+            imgEl.classList.add('loaded');
+          });
+          
+          el.appendChild(imgEl);
+        }
     }
 
 
