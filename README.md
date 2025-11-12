@@ -3,6 +3,7 @@
 A website to easily edit your MiniPracticeKit hotbar. It includes features like adding or removing items and editing barrels, chests, shulker boxes, and more.
 
 ## Full Features
+- Automatically loads the default `hotbar.nbt` file when the website loads.
 - Change the position of an item on the hotbar or inside a container by dragging and dropping it.
 - Add, remove, or change items by clicking a slot.
 - Edit all 9 hotbars in a single `hotbar.nbt` file by clicking the `Hotbar 1` button. 
