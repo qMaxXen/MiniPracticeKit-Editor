@@ -13,7 +13,6 @@ A website to easily edit your MiniPracticeKit hotbar. It includes features like 
 - Delete a container using the `Delete container` button in the `Edit container` popup.
 - Edit books & quills by clicking the `Edit book` button.
 - Change the book name, edit lore text, and add or remove pages.
-- Load the default MiniPracticeKit hotbar using the `Load default` button.
 - Import your hotbar by dragging and dropping your `hotbar.nbt` file or clicking the `Open hotbar.nbt` button.
 
 ## License
