@@ -17,7 +17,7 @@ A website to easily edit your MiniPracticeKit hotbar. It includes features like 
 - Import your hotbar by dragging and dropping your `hotbar.nbt` file or clicking the `Open hotbar.nbt` button.
 
 ## License
-MiniPracticeKit-Editor is licensed under the MIT license. You can view the full license [here](https://raw.githubusercontent.com/qMaxXen/MiniPracticeKit-Editor/refs/heads/main/LICENSE).
+MiniPracticeKit Editor is licensed under the MIT license. You can view the full license [here](https://raw.githubusercontent.com/qMaxXen/MiniPracticeKit-Editor/refs/heads/main/LICENSE).
 
 ## Credits
 - [Knawk](https://github.com/Knawk/mc-MiniPracticeKit) – creator of MiniPracticeKit.
