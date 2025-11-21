@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MPK Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.0">
+  <link rel="stylesheet" href="styles.css?v=1.0.1">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
@@ -175,6 +175,7 @@
                 flex-shrink:1;
                 flex-grow:1;
                 min-width:160px;
+                max-width:160px;
                 outline:none;
                 transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
                 cursor:text;
@@ -188,7 +189,9 @@
           <div id="containerSub" class="spoiler"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0">Delete container</button>
+          <button id="pasteContainerBtn" class="btn small">Paste</button>
+          <button id="copyContainerBtn" class="btn small">Copy</button>
+          <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0;margin-left:auto">Delete container</button>
           <button id="closeContainer" class="btn small">Close</button>
         </div>
     </div>
@@ -202,6 +205,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="script.js?v=1.0.0"></script>
+  <script type="module" src="script.js?v=1.0.1"></script>
 </body>
 </html>

@@ -36,6 +36,7 @@ const applySlotBtn = document.getElementById('applySlotBtn');
 const modalClose = document.getElementById('modalClose');
 
 let slotClipboard = null;
+let containerClipboard = null;
 
 const copySlotBtn = document.createElement('button');
 copySlotBtn.className = 'btn small';
@@ -87,6 +88,7 @@ const closeContainer = document.getElementById('closeContainer');
 const deleteContainerBtn = document.getElementById('deleteContainer');
 
 const containerItemName = document.getElementById('containerItemName');
+
 const containerSub = document.getElementById('containerSub');
 const containerNameInput = document.getElementById('containerNameInput');
 
@@ -555,6 +557,14 @@ function updateCopyPasteButtons() {
     copySlotBtn.disabled = false;
 }
 
+function updateContainerCopyPasteButtons() {
+    const copyBtn = document.getElementById('copyContainerBtn');
+    const pasteBtn = document.getElementById('pasteContainerBtn');
+    
+    if (copyBtn) copyBtn.disabled = false;
+    if (pasteBtn) pasteBtn.disabled = !containerClipboard;
+}
+
 copySlotBtn.addEventListener('click', () => {
     copySlotBtn.classList.add('active');
     setTimeout(() => copySlotBtn.classList.remove('active'), 320);
@@ -680,6 +690,77 @@ pasteSlotBtn.addEventListener('click', () => {
     }
 });
 
+
+const copyContainerBtn = document.getElementById('copyContainerBtn');
+
+if (copyContainerBtn) {
+    copyContainerBtn.addEventListener('click', () => {
+        if (!currentContainerRaw) return;
+        
+        copyContainerBtn.classList.add('active');
+        setTimeout(() => copyContainerBtn.classList.remove('active'), 320);
+
+        try {
+            const items = currentContainerRaw.tag && 
+                         currentContainerRaw.tag.BlockEntityTag && 
+                         Array.isArray(currentContainerRaw.tag.BlockEntityTag.Items) 
+                         ? currentContainerRaw.tag.BlockEntityTag.Items 
+                         : [];
+            
+            containerClipboard = items.map(item => {
+                const cloned = JSON.parse(JSON.stringify(item));
+                return cloned;
+            });
+            
+            updateContainerCopyPasteButtons();
+            showSuccessNotification(`Copied ${containerClipboard.length} items from container!`);
+        } catch (e) {
+            console.error('Container copy failed', e);
+            alert('Failed to copy container: ' + (e && e.message ? e.message : String(e)));
+        }
+    });
+}
+
+const pasteContainerBtn = document.getElementById('pasteContainerBtn');
+if (pasteContainerBtn) {
+    pasteContainerBtn.addEventListener('click', () => {
+        if (!containerClipboard || !currentContainerRaw) return;
+        
+        pasteContainerBtn.classList.add('active');
+        setTimeout(() => pasteContainerBtn.classList.remove('active'), 320);
+
+        try {
+            ensureContainerStructure(currentContainerRaw);
+            
+            const clonedItems = containerClipboard.map(item => 
+                JSON.parse(JSON.stringify(item))
+            );
+            
+            currentContainerRaw.tag.BlockEntityTag.Items = clonedItems;
+            
+            for (let h = 0; h < itemsArray.length; h++) {
+                const top = itemsArray[h];
+                if (!top || !top._raw) continue;
+                if (top._raw === currentContainerRaw) {
+                    break;
+                }
+                if (top._raw.tag && 
+                    top._raw.tag.BlockEntityTag && 
+                    top._raw.tag.BlockEntityTag.Items === currentContainerRaw.tag.BlockEntityTag.Items) {
+                    top._raw = currentContainerRaw;
+                    break;
+                }
+            }
+            
+            renderCurrentContainer();
+            renderGrid();
+            showSuccessNotification(`Pasted ${clonedItems.length} items into container!`);
+        } catch (e) {
+            console.error('Container paste failed', e);
+            alert('Failed to paste container: ' + (e && e.message ? e.message : String(e)));
+        }
+    });
+}
 
 modalClose.addEventListener('click', () => {
     modalClose.classList.add('active');
@@ -1151,6 +1232,8 @@ function closeContainerModal(){
   containerHistory = []; 
   const backBtn = document.getElementById('containerBackBtn');
   if (backBtn) backBtn.remove();
+  
+  updateContainerCopyPasteButtons();
 }
 
 
@@ -1741,6 +1824,7 @@ function openContainerModal(raw, context, isBackNavigation = false){
   renderCurrentContainer();
 
   updateContainerBackButton();
+  updateContainerCopyPasteButtons();
 
   containerModal.classList.add('show');
   containerModal.style.display = 'flex';
