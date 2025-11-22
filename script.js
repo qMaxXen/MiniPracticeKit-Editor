@@ -1841,8 +1841,10 @@ function updateContainerBackButton() {
     const backBtn = document.createElement('button');
     backBtn.id = backBtnId;
     backBtn.className = 'btn small';
-    backBtn.textContent = '← Back';
+    backBtn.textContent = '←';
     backBtn.style.marginRight = 'auto';
+
+    backBtn.title = 'Go back one container';
 
     backBtn.addEventListener('click', () => {
       goBackToParentContainer();
