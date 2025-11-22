@@ -9,6 +9,7 @@ A website to easily edit your MiniPracticeKit hotbar. It includes features like 
 - Edit all 9 hotbars in a single `hotbar.nbt` file by clicking the `Hotbar 1` button. 
 - Copy and paste items, including books & quills, which also copy the book’s name, lore, and pages.
 - Edit containers such as barrels, chests, and shulker boxes.
+- Copy and paste containers
 - Change the display name of a container.
 - Return to the previous container using the `Back` button.
 - Delete a container using the `Delete container` button in the `Edit container` popup.
