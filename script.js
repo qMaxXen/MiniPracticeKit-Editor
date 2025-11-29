@@ -1288,6 +1288,13 @@ function serializeLoreEntry(line) {
     }
 }
 
+const openFileBtn = document.getElementById('openFile');
+if (openFileBtn) {
+    openFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+}
+
 function simplifyDisplayForWrite(item) {
     if (!item || typeof item !== 'object') return;
     if (!item.tag || typeof item.tag !== 'object') return;
@@ -1841,10 +1848,16 @@ function updateContainerBackButton() {
     const backBtn = document.createElement('button');
     backBtn.id = backBtnId;
     backBtn.className = 'btn small';
-    backBtn.textContent = '←';
+    const arrowImg = document.createElement('img');
+    arrowImg.src = './icons/ui/arrow.png';
+    arrowImg.alt = '←';
+    arrowImg.style.width = '16px';
+    arrowImg.style.height = '16px';
+    arrowImg.style.verticalAlign = 'middle';
+    backBtn.appendChild(arrowImg);
     backBtn.style.marginRight = 'auto';
 
-    backBtn.title = 'Go back one container';
+    backBtn.title = 'Back';
 
     backBtn.addEventListener('click', () => {
       goBackToParentContainer();
