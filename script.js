@@ -1828,6 +1828,7 @@ function openContainerModal(raw, context, isBackNavigation = false){
   } catch (e) {}
 
   containerSub.textContent = `Editing container contents`;
+  containerSub.style.marginTop = '2px';
   renderCurrentContainer();
 
   updateContainerBackButton();
@@ -1848,14 +1849,20 @@ function updateContainerBackButton() {
     const backBtn = document.createElement('button');
     backBtn.id = backBtnId;
     backBtn.className = 'btn small';
+    backBtn.style.display = 'flex';
+    backBtn.style.alignItems = 'center';
+    backBtn.style.gap = '6px';
+
     const arrowImg = document.createElement('img');
     arrowImg.src = './icons/ui/arrow.png';
     arrowImg.alt = '←';
     arrowImg.style.width = '16px';
     arrowImg.style.height = '16px';
-    arrowImg.style.verticalAlign = 'middle';
     backBtn.appendChild(arrowImg);
-    backBtn.style.marginRight = 'auto';
+
+    const backText = document.createElement('span');
+    backText.textContent = 'Back';
+    backBtn.appendChild(backText);
 
     backBtn.title = 'Back';
 
@@ -1863,8 +1870,9 @@ function updateContainerBackButton() {
       goBackToParentContainer();
     });
 
-    const buttonContainer = deleteContainerBtn.parentElement;
-    buttonContainer.insertBefore(backBtn, buttonContainer.firstChild);
+    const pasteBtn = document.getElementById('pasteContainerBtn');
+    const buttonContainer = pasteBtn.parentElement;
+    buttonContainer.insertBefore(backBtn, pasteBtn);
   }
 }
 

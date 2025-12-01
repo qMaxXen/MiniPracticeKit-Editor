@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MPK Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.3">
+  <link rel="stylesheet" href="styles.css?v=1.0.4">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
@@ -196,9 +196,6 @@
                 style="margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; flex-shrink:0;">
               Container
             </div>
-
-
-
             <div style="color:var(--muted);font-size:0.95rem; flex-shrink:0; margin:0 2px;">—</div>
 
             <input id="containerNameInput" type="text"
@@ -213,7 +210,7 @@
                 flex-shrink:1;
                 flex-grow:1;
                 min-width:140px;
-                max-width:140px;
+                max-width:200px;
                 outline:none;
                 transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
                 cursor:text;
@@ -229,7 +226,6 @@
         <div style="display:flex;gap:8px;align-items:center">
           <button id="pasteContainerBtn" class="btn small">Paste</button>
           <button id="copyContainerBtn" class="btn small">Copy</button>
-          <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0;margin-left:auto">Delete container</button>
           <button id="closeContainer" class="btn small">Close</button>
         </div>
     </div>
@@ -237,12 +233,13 @@
 
       <div style="margin-top:10px">
         <div id="containerGrid" style="display:grid;grid-template-columns:repeat(9,64px);gap:8px"></div>
-        <div style="display:flex;gap:.5rem;align-items:center;margin-top:10px">
+        <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:10px">
           <div class="small" style="color:var(--muted)">Click a slot to edit or replace.</div>
+          <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0">Delete container</button>
         </div>
       </div>
     </div>
   </div>
-  <script type="module" src="script.js?v=1.0.3"></script>
+  <script type="module" src="script.js?v=1.0.4"></script>
 </body>
 </html>
