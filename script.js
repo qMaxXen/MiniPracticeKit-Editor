@@ -152,6 +152,7 @@ let dragFrom = null;
 const DRAG_THRESHOLD = 6; 
 let pointerDownInfo = null;  
 let isDragging = false;     
+let isProcessingDrag = false;
 
 
 let applyMode = {type:'top', index:0};
@@ -1123,25 +1124,31 @@ function renderGrid(){
     el.addEventListener('dragover', (ev)=> { ev.preventDefault(); try { ev.dataTransfer.dropEffect = 'move'; } catch(e){}; el.style.opacity = 0.8; });
     el.addEventListener('dragleave', ()=> { el.style.opacity = 1; });
     el.addEventListener('drop', (ev)=> {
-    ev.preventDefault();
-    el.style.opacity = 1;
-    const payload = ev.dataTransfer.getData('text/plain') || '';
-    const to = Number(el.dataset.slot);
+        ev.preventDefault();
+        el.style.opacity = 1;
+        
+        if (isProcessingDrag) return;
+        isProcessingDrag = true;
+        
+        const payload = ev.dataTransfer.getData('text/plain') || '';
 
-    if (payload.startsWith('C:')) {
-        const fromIdx = Number(payload.slice(2));
-        if (Number.isFinite(fromIdx)) moveContainerToHotbar(currentContainerRaw, fromIdx, to);
-        return;
-    }
+        if (payload.startsWith('C:')) {
+            const fromIdx = Number(payload.slice(2));
+            if (Number.isFinite(fromIdx)) moveWithinContainer(raw, fromIdx, i);
+            setTimeout(() => { isProcessingDrag = false; }, 50);
+            return;
+        }
 
-    if (payload.startsWith('H:')) {
-        const fromIdx = Number(payload.slice(2));
-        if (Number.isFinite(fromIdx)) swapSlots(fromIdx, to);
-        return;
-    }
+        if (payload.startsWith('H:')) {
+            const fromHotbar = Number(payload.slice(2));
+            if (Number.isFinite(fromHotbar)) moveHotbarToContainer(fromHotbar, raw, i);
+            setTimeout(() => { isProcessingDrag = false; }, 50);
+            return;
+        }
 
-    const maybeNum = Number(payload);
-    if (Number.isFinite(maybeNum)) swapSlots(maybeNum, to);
+        const maybeNum = Number(payload);
+        if (Number.isFinite(maybeNum)) moveHotbarToContainer(maybeNum, raw, i);
+        setTimeout(() => { isProcessingDrag = false; }, 50);
     });
     grid.appendChild(el);
     }
@@ -1190,34 +1197,39 @@ function moveHotbarToContainer(fromHotbarIdx, containerRaw, toIdx){
 
 function moveWithinContainer(containerRaw, fromIdx, toIdx){
     if(!containerRaw) return;
+    if(fromIdx === toIdx) return; 
+    
     const items = containerRaw.tag && containerRaw.tag.BlockEntityTag && Array.isArray(containerRaw.tag.BlockEntityTag.Items) ? containerRaw.tag.BlockEntityTag.Items.slice() : [];
 
-    const idxFrom = items.findIndex(it => Number(it.Slot ?? it.slot ?? -1) === fromIdx);
-    const idxTo   = items.findIndex(it => Number(it.Slot ?? it.slot ?? -1) === toIdx);
+    const itemFromObj = items.find(it => Number(it.Slot ?? it.slot ?? -1) === fromIdx);
+    const itemToObj = items.find(it => Number(it.Slot ?? it.slot ?? -1) === toIdx);
 
-    if(idxFrom !== -1 && idxTo !== -1){
-    const itemFrom = JSON.parse(JSON.stringify(items[idxFrom]));
-    const itemTo   = JSON.parse(JSON.stringify(items[idxTo]));
-    itemFrom.Slot = toIdx;
-    itemTo.Slot   = fromIdx;
+    let newItems = items.filter(it => {
+        const slot = Number(it.Slot ?? it.slot ?? -1);
+        return slot !== fromIdx && slot !== toIdx;
+    });
 
-    const newItems = items.filter((_, i) => i !== idxFrom && i !== idxTo);
-    newItems.push(itemFrom, itemTo);
-    containerRaw.tag.BlockEntityTag.Items = newItems;
-    renderCurrentContainer();
-    return;
+    if(itemFromObj && itemToObj){
+        const itemFrom = JSON.parse(JSON.stringify(itemFromObj));
+        const itemTo = JSON.parse(JSON.stringify(itemToObj));
+        
+        itemFrom.Slot = toIdx;
+        itemTo.Slot = fromIdx;
+        
+        newItems.push(itemFrom, itemTo);
     }
-
-    if(idxFrom !== -1){
-    const itemFrom = JSON.parse(JSON.stringify(items[idxFrom]));
-    itemFrom.Slot = toIdx;
-
-    const newItems = items.filter(it => Number(it.Slot ?? it.slot ?? -1) !== fromIdx && Number(it.Slot ?? it.slot ?? -1) !== toIdx);
-    newItems.push(itemFrom);
-    containerRaw.tag.BlockEntityTag.Items = newItems;
-    renderCurrentContainer();
-    return;
+    else if(itemFromObj){
+        const itemFrom = JSON.parse(JSON.stringify(itemFromObj));
+        itemFrom.Slot = toIdx;
+        newItems.push(itemFrom);
     }
+    else if(itemToObj){
+        const itemTo = JSON.parse(JSON.stringify(itemToObj));
+        itemTo.Slot = fromIdx;
+        newItems.push(itemTo);
+    }
+    
+    containerRaw.tag.BlockEntityTag.Items = newItems;
     renderCurrentContainer();
 }
 
