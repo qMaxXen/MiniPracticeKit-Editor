@@ -1181,23 +1181,21 @@ function renderGrid(){
         isProcessingDrag = true;
         
         const payload = ev.dataTransfer.getData('text/plain') || '';
-
-        if (payload.startsWith('C:')) {
-            const fromIdx = Number(payload.slice(2));
-            if (Number.isFinite(fromIdx)) moveWithinContainer(raw, fromIdx, i);
-            setTimeout(() => { isProcessingDrag = false; }, 50);
-            return;
-        }
+        const to = Number(i);
 
         if (payload.startsWith('H:')) {
-            const fromHotbar = Number(payload.slice(2));
-            if (Number.isFinite(fromHotbar)) moveHotbarToContainer(fromHotbar, raw, i);
+            const fromIdx = Number(payload.slice(2));
+            if (Number.isFinite(fromIdx)) {
+                swapSlots(fromIdx, to);
+            }
             setTimeout(() => { isProcessingDrag = false; }, 50);
             return;
         }
 
         const maybeNum = Number(payload);
-        if (Number.isFinite(maybeNum)) moveHotbarToContainer(maybeNum, raw, i);
+        if (Number.isFinite(maybeNum)) {
+            swapSlots(maybeNum, to);
+        }
         setTimeout(() => { isProcessingDrag = false; }, 50);
     });
     grid.appendChild(el);
@@ -1210,23 +1208,6 @@ function swapSlots(a,b){
     itemsArray[b] = tmp || {id:'minecraft:air',Count:1,Slot:b,_raw:{id:'minecraft:air',Count:1}};
     itemsArray[a].Slot = a;
     itemsArray[b].Slot = b;
-    renderGrid();
-}
-
-function moveContainerToHotbar(containerRaw, fromIdx, toIdx){
-    if(!containerRaw) return;
-    const items = containerRaw.tag && containerRaw.tag.BlockEntityTag && Array.isArray(containerRaw.tag.BlockEntityTag.Items) ? containerRaw.tag.BlockEntityTag.Items.slice() : [];
-    const obj = items.find(it => Number(it.Slot ?? it.slot ?? -1) === fromIdx);
-    const remaining = items.filter(it => Number(it.Slot ?? it.slot ?? -1) !== fromIdx);
-    containerRaw.tag.BlockEntityTag.Items = remaining;
-    if(obj){
-    const copyRaw = JSON.parse(JSON.stringify(obj));
-    copyRaw.Slot = toIdx;
-    itemsArray[toIdx] = { id: copyRaw.id || 'minecraft:air', Count: Number(copyRaw.Count ?? 1), Slot: toIdx, _raw: copyRaw };
-    } else {
-    itemsArray[toIdx] = { id:'minecraft:air', Count:1, Slot:toIdx, _raw:{id:'minecraft:air',Count:1} };
-    }
-    renderCurrentContainer();
     renderGrid();
 }
 
@@ -2036,26 +2017,31 @@ function renderCurrentContainer(){
     el.addEventListener('dragleave', ()=> { el.style.opacity = 1; });
 
     el.addEventListener('drop', (ev)=> {
-    ev.preventDefault();
-    el.style.opacity = 1;
-    const payload = ev.dataTransfer.getData('text/plain') || '';
+        ev.preventDefault();
+        el.style.opacity = 1;
+        const payload = ev.dataTransfer.getData('text/plain') || '';
 
-    if (payload.startsWith('C:')) {
-        const fromIdx = Number(payload.slice(2));
-        if (Number.isFinite(fromIdx)) moveWithinContainer(raw, fromIdx, i);
-        return;
-    }
+        if (payload.startsWith('C:')) {
+            const fromIdx = Number(payload.slice(2));
+            if (Number.isFinite(fromIdx)) {
+                moveWithinContainer(raw, fromIdx, i);
+            }
+            return;
+        }
 
-    if (payload.startsWith('H:')) {
-        const fromHotbar = Number(payload.slice(2));
-        if (Number.isFinite(fromHotbar)) moveHotbarToContainer(fromHotbar, raw, i);
-        return;
-    }
+        if (payload.startsWith('H:')) {
+            const fromHotbar = Number(payload.slice(2));
+            if (Number.isFinite(fromHotbar)) {
+                moveHotbarToContainer(fromHotbar, raw, i);
+            }
+            return;
+        }
 
-    const maybeNum = Number(payload);
-    if (Number.isFinite(maybeNum)) moveHotbarToContainer(maybeNum, raw, i);
+        const maybeNum = Number(payload);
+        if (Number.isFinite(maybeNum)) {
+            moveHotbarToContainer(maybeNum, raw, i);
+        }
     });
-
 
     el.addEventListener('pointerdown', (ev) => {
         pointerDownInfo = { x: ev.clientX, y: ev.clientY, pointerId: ev.pointerId, time: Date.now(), containerSlotIndex: i };
