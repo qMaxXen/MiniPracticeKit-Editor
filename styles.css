@@ -709,3 +709,37 @@ border-radius: 6px;
   .explanation-readme { font-size: 0.86rem; margin-top: 8px; }
 }
 
+.drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+.drag-preview.active {
+  opacity: 0.9;
+}
+
+.drag-preview img {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.drag-preview .preview-count {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+

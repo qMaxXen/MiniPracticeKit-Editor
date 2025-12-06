@@ -153,7 +153,7 @@ const DRAG_THRESHOLD = 6;
 let pointerDownInfo = null;  
 let isDragging = false;     
 let isProcessingDrag = false;
-
+let dragPreview = null;
 
 let applyMode = {type:'top', index:0};
 let selectedIdForApply = 'minecraft:air';
@@ -352,6 +352,60 @@ function showSuccessNotification(message) {
   }, 1500);
 }
 
+function createDragPreview(itemData, startX, startY) {
+    removeDragPreview();
+    
+    if (!itemData || !itemData.id || itemData.id.toLowerCase().includes('air')) {
+        return;
+    }
+    
+    dragPreview = document.createElement('div');
+    dragPreview.className = 'drag-preview';
+    dragPreview.style.left = startX + 'px';
+    dragPreview.style.top = startY + 'px';
+    
+    const img = document.createElement('img');
+    const iconName = itemData.id.split(':').pop();
+    img.src = iconsPath + iconName + '.png';
+    img.onerror = () => img.src = iconsPath + 'air.png';
+    dragPreview.appendChild(img);
+    
+    const count = Number(itemData.Count || 0);
+    if (count > 0) {
+        const countBadge = document.createElement('div');
+        countBadge.className = 'preview-count';
+        countBadge.textContent = count;
+        dragPreview.appendChild(countBadge);
+    }
+    
+    document.body.appendChild(dragPreview);
+    
+    setTimeout(() => {
+        if (dragPreview) dragPreview.classList.add('active');
+    }, 10);
+    
+    document.addEventListener('dragover', updateDragPreviewPosition);
+}
+
+function updateDragPreviewPosition(ev) {
+    if (dragPreview) {
+        dragPreview.style.left = ev.clientX + 'px';
+        dragPreview.style.top = ev.clientY + 'px';
+    }
+}
+
+function removeDragPreview() {
+    if (dragPreview) {
+        dragPreview.classList.remove('active');
+        setTimeout(() => {
+            if (dragPreview && dragPreview.parentNode) {
+                dragPreview.parentNode.removeChild(dragPreview);
+            }
+            dragPreview = null;
+        }, 150);
+    }
+    document.removeEventListener('dragover', updateDragPreviewPosition);
+}
 
 const dragOverlay = document.getElementById('dragOverlay');
 let dragCounter = 0; 
@@ -1099,17 +1153,12 @@ function renderGrid(){
         ev.dataTransfer.setData('text/plain', 'H:' + i);
         ev.dataTransfer.effectAllowed = 'move';
 
+        createDragPreview(itemsArray[i], ev.clientX, ev.clientY);
+
         try {
-            const img = new Image();
-            img.src = iconsPath + (String(itemsArray[i].id || 'air').split(':').pop()) + '.png';
-            img.width = 36; img.height = 36;
-            img.style.position = 'fixed';
-            img.style.left = '-9999px';
-            img.style.top = '-9999px';
-            img.style.opacity = '0';
-            document.body.appendChild(img);
-            ev.dataTransfer.setDragImage(img, 18, 18);
-            setTimeout(() => document.body.removeChild(img), 0);
+            const emptyImg = new Image();
+            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            ev.dataTransfer.setDragImage(emptyImg, 0, 0);
         } catch(e){}
     });
 
@@ -1119,6 +1168,7 @@ function renderGrid(){
         isDragging = false;
         dragFrom = null;
         el.classList.remove('dragging');
+        removeDragPreview(); 
     });
 
     el.addEventListener('dragover', (ev)=> { ev.preventDefault(); try { ev.dataTransfer.dropEffect = 'move'; } catch(e){}; el.style.opacity = 0.8; });
@@ -1955,8 +2005,6 @@ function renderCurrentContainer(){
         el.appendChild(emptyBadge);
     }
 
-    
-
     el.addEventListener('dragstart', (ev) => {
         isDragging = true;
         dragFrom = i;
@@ -1964,27 +2012,23 @@ function renderCurrentContainer(){
         ev.dataTransfer.setData('text/plain', 'C:' + i);
         ev.dataTransfer.effectAllowed = 'move';
 
-        try{
-        const dragImg = document.createElement('img');
-        dragImg.src = (obj && obj.id) ? (iconsPath + (obj.id.split(':').pop()) + '.png') : (iconsPath + 'air.png');
-        dragImg.width = 36; dragImg.height = 36;
-        dragImg.style.position = 'fixed';
-        dragImg.style.left = '-9999px';
-        dragImg.style.top = '-9999px';
-        dragImg.style.opacity = '0';
-        document.body.appendChild(dragImg);
-        ev.dataTransfer.setDragImage(dragImg, 18, 18);
-        setTimeout(()=> document.body.removeChild(dragImg), 0);
-        }catch(e){}
+        const itemData = obj || { id: 'minecraft:air', Count: 0 };
+        createDragPreview(itemData, ev.clientX, ev.clientY);
+
+        try {
+            const emptyImg = new Image();
+            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            ev.dataTransfer.setDragImage(emptyImg, 0, 0);
+        } catch(e){}
+        
         el.classList.add('dragging');
     });
-
-
 
     el.addEventListener('dragend', ()=> {
         isDragging = false;
         dragFrom = null;
         el.classList.remove('dragging');
+        removeDragPreview();
     });
 
 
