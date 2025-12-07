@@ -155,6 +155,9 @@ let isDragging = false;
 let isProcessingDrag = false;
 let dragPreview = null;
 
+const emptyDragImage = new Image();
+emptyDragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 let applyMode = {type:'top', index:0};
 let selectedIdForApply = 'minecraft:air';
 
@@ -1153,13 +1156,11 @@ function renderGrid(){
         ev.dataTransfer.setData('text/plain', 'H:' + i);
         ev.dataTransfer.effectAllowed = 'move';
 
-        createDragPreview(itemsArray[i], ev.clientX, ev.clientY);
+        ev.dataTransfer.setDragImage(emptyDragImage, 0, 0);
 
-        try {
-            const emptyImg = new Image();
-            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-            ev.dataTransfer.setDragImage(emptyImg, 0, 0);
-        } catch(e){}
+        requestAnimationFrame(() => {
+            createDragPreview(itemsArray[i], ev.clientX, ev.clientY);
+        });
     });
 
 
@@ -1993,14 +1994,12 @@ function renderCurrentContainer(){
         ev.dataTransfer.setData('text/plain', 'C:' + i);
         ev.dataTransfer.effectAllowed = 'move';
 
-        const itemData = obj || { id: 'minecraft:air', Count: 0 };
-        createDragPreview(itemData, ev.clientX, ev.clientY);
+        ev.dataTransfer.setDragImage(emptyDragImage, 0, 0);
 
-        try {
-            const emptyImg = new Image();
-            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-            ev.dataTransfer.setDragImage(emptyImg, 0, 0);
-        } catch(e){}
+        const itemData = obj || { id: 'minecraft:air', Count: 0 };
+        requestAnimationFrame(() => {
+            createDragPreview(itemData, ev.clientX, ev.clientY);
+        });
         
         el.classList.add('dragging');
     });
