@@ -96,6 +96,11 @@ z-index:100;
 #bookModal{z-index:400}
 #bookModal .modal{z-index:401}
 
+#offhandModal{z-index:500}
+#offhandModal .modal{z-index:501}
+#offhandPickerModal{z-index:600}
+#offhandPickerModal .modal{z-index:601}
+
 #githubBtn { transition: transform .28s cubic-bezier(.2,.9,.3,1); }
 #githubBtn:hover { transform: scale(1.08); }
 #githubBtn.git-anim { animation: gitpop .6s ease; }
@@ -742,4 +747,3 @@ border-radius: 6px;
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
-

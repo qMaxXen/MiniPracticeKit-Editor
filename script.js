@@ -2,17 +2,12 @@ import * as NBT from "https://cdn.jsdelivr.net/npm/nbtify@2.1.0/+esm";
 
 const iconsPath = './icons/items/';
 const curated = ["air.png","stone.png","diamond_sword.png","ender_pearl.png","bow.png","golden_apple.png","water_bucket.png","lava_bucket.png","oak_planks.png","bedrock.png"];
-
-
 const fileInput = document.getElementById('file');
 const grid = document.getElementById('grid');
 const downloadBtn = document.getElementById('download');
 const loadDefaultBtn = document.getElementById('loadDefault');
 const resetBtn = document.getElementById('reset');
-
 const slotModal = document.getElementById('slotModal');
-
-
 const slotPreview = document.getElementById('slotPreview');
 const slotIdDisplay = document.getElementById('itemIdDisplay');
 const slotCountInput = document.getElementById('itemCountInput');
@@ -30,7 +25,6 @@ try {
   slotCountLabel.style.padding = '6px 12px';
   slotCountLabel.style.borderRadius = '6px';
 } catch (e) {}
-
 
 const applySlotBtn = document.getElementById('applySlotBtn');
 const modalClose = document.getElementById('modalClose');
@@ -74,8 +68,6 @@ if (modalClose && modalClose.parentElement) {
     modalClose.style.borderRadius = '6px';
     } catch(e){}
 }
-
-
 
 const containerViewBtnWrap = document.getElementById('containerViewBtnWrap');
 
@@ -126,9 +118,6 @@ if (containerNameInput) {
     }
   });
 }
-
-
-
 
 let currentNbt = null;
 let itemsArray = new Array(9).fill(null).map((_,i)=>({id:'minecraft:air',Count:1,Slot:i,_raw:{id:'minecraft:air',Count:1}}));
@@ -240,7 +229,6 @@ if (hotbarDropdownBtn && hotbarTooltip) {
     }
   });
 
-
   hotbarDropdownBtn.addEventListener('focus', () => {
     if (hotbarDropdown.classList.contains('show')) {
       hotbarTooltip.classList.add('show');
@@ -252,7 +240,6 @@ if (hotbarDropdownBtn && hotbarTooltip) {
     }
   });
 }
-
 
 function updateHotbarDropdownUI() {
   hotbarOptions.forEach(option => {
@@ -285,9 +272,7 @@ function switchToHotbar(index) {
 
 updateHotbarDropdownUI();
 
-
 let iconList = [];
-
 
 const bookModal = document.getElementById('bookModal');
 const bookPagesContainer = document.getElementById('bookPagesContainer');
@@ -298,9 +283,32 @@ const cancelBookBtn = document.getElementById('cancelBookBtn');
 let bookPagesArray = [];
 let bookCurrentPage = 0;
 
-
 let currentBookRaw = null;
 let currentBookContext = null; 
+
+const offhandModal = document.getElementById('offhandModal');
+const offhandModalClose = document.getElementById('offhandModalClose');
+const offhandVersionSelect = document.getElementById('offhandVersionSelect');
+const offhandItemIcon = document.getElementById('offhandItemIcon');
+const offhandItemDisplay = document.getElementById('offhandItemDisplay');
+const offhandCountInput = document.getElementById('offhandCountInput');
+const offhandCountLabel = document.getElementById('offhandCountLabel');
+const offhandCancelBtn = document.getElementById('offhandCancelBtn');
+const offhandCreateBtn = document.getElementById('offhandCreateBtn');
+
+const offhandPickerModal = document.getElementById('offhandPickerModal');
+const offhandPickerClose = document.getElementById('offhandPickerClose');
+const offhandPickerSearch = document.getElementById('offhandPickerSearch');
+const offhandPickerList = document.getElementById('offhandPickerList');
+
+let offhandSelectedItem = 'minecraft:cooked_salmon';
+let offhandCurrentContainerRaw = null;
+
+if (offhandCountInput && offhandCountLabel) {
+  offhandCountInput.addEventListener('input', () => {
+    offhandCountLabel.textContent = offhandCountInput.value;
+  });
+}
 
 const iconCache = new Map();
 
@@ -314,7 +322,6 @@ function preloadIcon(iconName) {
 }
 
 preloadIcon('air');
-
 
 async function loadIconsIndex(){
     const candidates = [
@@ -928,6 +935,157 @@ function onPickerChoose(id){
     updateSlotModalButtons();
 }
 
+function renderOffhandPicker(list) {
+  const normalized = (list || []).map(fn => typeof fn === 'string' ? fn.replace(/\.png$/i,'') : String(fn));
+  const seen = new Set();
+  const ordered = [];
+  for (const n of normalized) {
+    if (!seen.has(n)) { seen.add(n); ordered.push(n); }
+  }
+  renderOffhandPickerList(ordered, '');
+}
+
+function renderOffhandPickerList(names, query) {
+  const q = (query || '').trim().toLowerCase();
+  const scored = names.map((n, idx) => ({name: n, score: scoreName(n, q), idx}));
+  scored.sort((a, b) => a.score - b.score || a.idx - b.idx);
+  
+  offhandPickerList.innerHTML = '';
+  for (const s of scored) {
+    if (q && s.score > 900) continue;
+    
+    const div = document.createElement('div');
+    div.className = 'picker-item';
+    
+    const img = document.createElement('img');
+    img.src = iconsPath + s.name + '.png';
+    img.onerror = () => img.src = iconsPath + 'air.png';
+    
+    const nm = document.createElement('div');
+    nm.className = 'name';
+    nm.textContent = displayName(s.name);
+    
+    div.appendChild(img);
+    div.appendChild(nm);
+    
+    div.addEventListener('click', () => {
+      const id = canonicalIdFromName(s.name);
+      offhandSelectedItem = id;
+      
+      const iconImg = offhandItemIcon.querySelector('img');
+      if (iconImg) {
+        iconImg.src = iconsPath + s.name + '.png';
+        iconImg.onerror = () => iconImg.src = iconsPath + 'air.png';
+      }
+      
+      offhandItemDisplay.value = displayName(s.name);
+      
+      closeOffhandPickerModal();
+    });
+    
+    offhandPickerList.appendChild(div);
+  }
+}
+
+function openOffhandPickerModal() {
+  renderOffhandPicker(iconList);
+  offhandPickerSearch.value = '';
+  offhandPickerModal.classList.add('show');
+  offhandPickerModal.style.display = 'flex';
+}
+
+function closeOffhandPickerModal() {
+  offhandPickerModal.classList.remove('show');
+  offhandPickerModal.style.display = 'none';
+  offhandPickerSearch.value = '';
+}
+
+
+function openOffhandModal(containerRaw) {
+  offhandCurrentContainerRaw = containerRaw;
+  
+  offhandSelectedItem = 'minecraft:cooked_salmon';
+  offhandVersionSelect.value = 'pre-1.17';
+  offhandCountInput.value = 5;
+  offhandCountLabel.textContent = '5';
+  
+  const iconImg = offhandItemIcon.querySelector('img');
+  if (iconImg) {
+    iconImg.src = iconsPath + 'cooked_salmon.png';
+  }
+  offhandItemDisplay.value = 'cooked salmon';
+  
+  offhandModal.classList.add('show');
+  offhandModal.style.display = 'flex';
+}
+
+function closeOffhandModal() {
+  offhandModal.classList.remove('show');
+  offhandModal.style.display = 'none';
+  offhandCurrentContainerRaw = null;
+}
+
+function createOffhandBook() {
+  if (!offhandCurrentContainerRaw) {
+    closeOffhandModal();
+    return;
+  }
+  
+  const version = offhandVersionSelect.value;
+  const itemName = offhandSelectedItem.replace('minecraft:', '');
+  const count = Number(offhandCountInput.value || 1);
+  
+  let command;
+  if (version === '1.17+') {
+    command = `item replace entity @p weapon.offhand with ${itemName} ${count}`;
+  } else {
+    command = `replaceitem entity @p weapon.offhand ${itemName} ${count}`;
+  }
+  
+  const bookRaw = {
+    id: 'minecraft:writable_book',
+    Count: 1,
+    tag: {
+      RepairCost: 0,
+      pages: [command],
+      display: {
+        Name: JSON.stringify({ text: 'AUTO' }),
+        Lore: [JSON.stringify({ text: 'Set offhand item' })]
+      }
+    }
+  };
+  
+  ensureContainerStructure(offhandCurrentContainerRaw);
+  const items = offhandCurrentContainerRaw.tag.BlockEntityTag.Items || [];
+  const usedSlots = new Set(items.map(it => Number(it.Slot ?? it.slot ?? -1)));
+  
+  let nextSlot = 0;
+  while (usedSlots.has(nextSlot) && nextSlot < 1000) {
+    nextSlot++;
+  }
+  
+  bookRaw.Slot = nextSlot;
+  items.push(bookRaw);
+  offhandCurrentContainerRaw.tag.BlockEntityTag.Items = items;
+  
+  for (let h = 0; h < itemsArray.length; h++) {
+    const top = itemsArray[h];
+    if (!top || !top._raw) continue;
+    if (top._raw === offhandCurrentContainerRaw) {
+      break;
+    }
+    if (top._raw.tag && top._raw.tag.BlockEntityTag && 
+        top._raw.tag.BlockEntityTag.Items === offhandCurrentContainerRaw.tag.BlockEntityTag.Items) {
+      top._raw = offhandCurrentContainerRaw;
+      break;
+    }
+  }
+  
+  renderCurrentContainer();
+  renderGrid();
+  closeOffhandModal();
+  showSuccessNotification('Offhand book created successfully!');
+}
 
 function updateSlotModalButtons() {
     containerViewBtnWrap.innerHTML = '';
@@ -1710,6 +1868,44 @@ bookModal.addEventListener('click', (ev) => {
 if (ev.target === bookModal) closeBookModal();
 });
 
+if (offhandModalClose) {
+  offhandModalClose.addEventListener('click', closeOffhandModal);
+}
+
+if (offhandCancelBtn) {
+  offhandCancelBtn.addEventListener('click', closeOffhandModal);
+}
+
+if (offhandCreateBtn) {
+  offhandCreateBtn.addEventListener('click', createOffhandBook);
+}
+
+if (offhandItemIcon) {
+  offhandItemIcon.addEventListener('click', openOffhandPickerModal);
+}
+
+if (offhandItemDisplay) {
+  offhandItemDisplay.addEventListener('click', openOffhandPickerModal);
+}
+
+if (offhandPickerClose) {
+  offhandPickerClose.addEventListener('click', closeOffhandPickerModal);
+}
+
+if (offhandPickerSearch) {
+  offhandPickerSearch.addEventListener('input', () => {
+    const list = iconList.map(f => f.replace(/\.png$/i, ''));
+    renderOffhandPickerList(list, offhandPickerSearch.value);
+  });
+}
+
+offhandModal.addEventListener('click', (ev) => {
+  if (ev.target === offhandModal) closeOffhandModal();
+});
+
+offhandPickerModal.addEventListener('click', (ev) => {
+  if (ev.target === offhandPickerModal) closeOffhandPickerModal();
+});
 
 applySlotBtn.addEventListener('click', ()=>{
     const count = Math.max(0, Number(slotCountInput.value || 0));
@@ -1886,8 +2082,18 @@ function openContainerModal(raw, context, isBackNavigation = false){
 
 function updateContainerBackButton() {
   const backBtnId = 'containerBackBtn';
-  let existingBtn = document.getElementById(backBtnId);
-  if (existingBtn) existingBtn.remove();
+  const offhandBtnId = 'addOffhandBtn';
+  
+  let existingBackBtn = document.getElementById(backBtnId);
+  let existingOffhandBtn = document.getElementById(offhandBtnId);
+  
+  if (existingBackBtn) existingBackBtn.remove();
+  if (existingOffhandBtn) existingOffhandBtn.remove();
+
+  const pasteBtn = document.getElementById('pasteContainerBtn');
+  const buttonContainer = pasteBtn ? pasteBtn.parentElement : null;
+  
+  if (!buttonContainer) return;
 
   if (containerHistory.length > 0) {
     const backBtn = document.createElement('button');
@@ -1914,10 +2120,24 @@ function updateContainerBackButton() {
       goBackToParentContainer();
     });
 
-    const pasteBtn = document.getElementById('pasteContainerBtn');
-    const buttonContainer = pasteBtn.parentElement;
     buttonContainer.insertBefore(backBtn, pasteBtn);
-  }
+  } else {
+      const containerId = (currentContainerRaw && currentContainerRaw.id) || '';
+      const isBarrel = containerId.toLowerCase().includes('barrel');
+      
+      if (isBarrel) {
+        const offhandBtn = document.createElement('button');
+        offhandBtn.id = offhandBtnId;
+        offhandBtn.className = 'btn small';
+        offhandBtn.textContent = 'Add offhand';
+
+        offhandBtn.addEventListener('click', () => {
+          openOffhandModal(currentContainerRaw);
+        });
+
+        buttonContainer.insertBefore(offhandBtn, pasteBtn);
+      }
+    }
 }
 
 
@@ -2132,16 +2352,12 @@ closeContainer.addEventListener('click', ()=>{
     closeContainerModal();
 });
 
-
-
-
 fileInput.addEventListener('change', async (ev) => {
         const f = ev.target.files[0];
         if (!f) return;
         await handleFileLoad(f);
         ev.target.value = '';
     });
-
 
 downloadBtn.addEventListener('click', async ()=>{
     allHotbars[currentHotbarIndex] = JSON.parse(JSON.stringify(itemsArray));
@@ -2216,9 +2432,7 @@ resetBtn.addEventListener('click', ()=>{
     showSuccessNotification('Successfully reset to the default hotbar.nbt!');
 });
 
-
 renderGrid();
-
 loadDefaultHotbar();
 
 slotModal.addEventListener('click', (ev) => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MPK Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.6">
+  <link rel="stylesheet" href="styles.css?v=1.0.7">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
@@ -177,8 +177,6 @@
 
         <label class="small">Pages</label>
         <div id="bookPagesContainer" style="display:flex;flex-direction:column;gap:8px"></div>
-
-
         <div style="display:flex;gap:.5rem;justify-content:flex-start;margin-top:8px">
             <div style="flex:1"></div>
             <button id="saveBookBtn" class="btn">Save</button>
@@ -229,8 +227,6 @@
           <button id="closeContainer" class="btn small">Close</button>
         </div>
     </div>
-
-
       <div style="margin-top:10px">
         <div id="containerGrid" style="display:grid;grid-template-columns:repeat(9,64px);gap:8px"></div>
         <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:10px">
@@ -240,6 +236,62 @@
       </div>
     </div>
   </div>
-  <script type="module" src="script.js?v=1.0.6"></script>
+  <div class="modal-backdrop" id="offhandModal">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offhandModalTitle" style="max-width:520px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div id="offhandModalTitle" class="title">Add offhand item</div>
+          </div>
+          <div>
+            <button id="offhandModalClose" class="btn small">Close</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label class="small">Minecraft version</label>
+            <select id="offhandVersionSelect" style="width:100%;margin-top:4px">
+              <option value="pre-1.17" selected>pre-1.17</option>
+              <option value="1.17+">1.17+</option>
+            </select>
+          </div>
+          <div>
+            <label class="small">Offhand item</label>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+              <div id="offhandItemIcon" style="width:48px;height:48px;background:linear-gradient(180deg,#1a1a1a,#121212);border-radius:8px;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s ease">
+                <img src="./icons/items/cooked_salmon.png" width="36" height="36" style="image-rendering:pixelated" onerror="this.src='./icons/items/air.png'">
+              </div>
+              <div style="flex:1">
+                <input id="offhandItemDisplay" type="text" readonly value="cooked salmon" style="background:#0f0f0f;color:var(--muted);border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:6px;width:100%;cursor:pointer" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="small">Item count</label>
+            <div class="count-controls" style="width:100%;margin-top:4px">
+              <input id="offhandCountInput" type="range" min="1" max="64" value="5">
+              <span id="offhandCountLabel" class="count-badge-inline">5</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button id="offhandCancelBtn" class="btn ghost">Cancel</button>
+            <button id="offhandCreateBtn" class="btn">Create book</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop" id="offhandPickerModal">
+      <div class="modal" role="dialog" aria-modal="true" style="max-width:480px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="title">Select offhand item</div>
+          <button id="offhandPickerClose" class="btn small">Close</button>
+        </div>
+        <div>
+          <input id="offhandPickerSearch" type="text" placeholder="Search items..." style="margin-bottom:8px">
+          <div class="picker-list" id="offhandPickerList" style="max-height:320px"></div>
+        </div>
+      </div>
+    </div>
+  <script type="module" src="script.js?v=1.0.7"></script>
 </body>
 </html>
