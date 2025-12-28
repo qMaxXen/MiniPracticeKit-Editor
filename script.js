@@ -222,7 +222,7 @@ function updateHotbarDropdownUI() {
     if (label) {
       label.textContent = `Hotbar ${currentHotbarIndex + 1}`;
     } else {
-      hotbarDropdownBtn.innerHTML = `<span class="hotbar-btn-label">Hotbar ${currentHotbarIndex + 1}</span><img src="icons/ui/dropdown.png" alt="" aria-hidden="true" class="hotbar-caret">`;
+      hotbarDropdownBtn.innerHTML = `<span class="hotbar-btn-label">Hotbar ${currentHotbarIndex + 1}</span><img src="icons/ui/dropdown.svg" alt="" aria-hidden="true" class="hotbar-caret">`;
     }
   }
 }
@@ -2093,10 +2093,10 @@ function updateContainerBackButton() {
     backBtn.style.gap = '6px';
 
     const arrowImg = document.createElement('img');
-    arrowImg.src = './icons/ui/arrow.png';
+    arrowImg.src = './icons/ui/arrow.svg';
     arrowImg.alt = '←';
-    arrowImg.style.width = '16px';
-    arrowImg.style.height = '16px';
+    arrowImg.style.width = '18px';
+    arrowImg.style.height = '18px';
     backBtn.appendChild(arrowImg);
 
     const backText = document.createElement('span');

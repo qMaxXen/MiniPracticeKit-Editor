@@ -379,8 +379,8 @@ border-radius: 6px;
 }
 
 .hotbar-caret {
-  width: 12px;              
-  height: 12px;           
+  width: 20px;              
+  height: 20x;           
   object-fit: contain;
   flex-shrink: 0;
   filter: invert(1) brightness(2);  
@@ -440,16 +440,14 @@ border-radius: 6px;
 
 .success-notification::before {
   content: "";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 20px;
   height: 20px;
-  background-image: url('./icons/ui/check_mark.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  flex-shrink: 0;
+  background-color: #16a34a; 
+  -webkit-mask: url('./icons/ui/check_mark.svg') center/contain no-repeat;
+  mask: url('./icons/ui/check_mark.svg') center/contain no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .success-notification.show {
