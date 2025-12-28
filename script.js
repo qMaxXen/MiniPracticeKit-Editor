@@ -1240,6 +1240,24 @@ function renderGrid(){
         el.appendChild(badge);
     }
 
+    const idLower = (s.id || '').toLowerCase();
+    if (idLower.includes('writable_book') || idLower.includes('book_and_quill')) {
+        const lore = s._raw?.tag?.display?.Lore;
+        if (Array.isArray(lore) && lore.length > 0) {
+            const hasOffhandLore = lore.some(l => {
+                const loreText = normalizeLoreEntry(l);
+                return loreText.toLowerCase().includes('set offhand item');
+            });
+            
+            if (hasOffhandLore) {
+                const offhandBadge = document.createElement('div');
+                offhandBadge.className = 'offhand-badge';
+                offhandBadge.textContent = 'offhand';
+                el.appendChild(offhandBadge);
+            }
+        }
+    }
+
     el.addEventListener('pointerdown', (ev) => {
         pointerDownInfo = { x: ev.clientX, y: ev.clientY, pointerId: ev.pointerId, time: Date.now(), slotIndex: i };
         try { el.setPointerCapture(ev.pointerId); } catch(e){}
@@ -2176,6 +2194,26 @@ function renderCurrentContainer(){
         emptyBadge.style.borderRadius = '6px';
         emptyBadge.textContent = 'empty';
         el.appendChild(emptyBadge);
+    }
+
+    if (obj) {
+        const idLower = (obj.id || '').toLowerCase();
+        if (idLower.includes('writable_book') || idLower.includes('book_and_quill')) {
+            const lore = obj.tag?.display?.Lore;
+            if (Array.isArray(lore) && lore.length > 0) {
+                const hasOffhandLore = lore.some(l => {
+                    const loreText = normalizeLoreEntry(l);
+                    return loreText.toLowerCase().includes('set offhand item');
+                });
+                
+                if (hasOffhandLore) {
+                    const offhandBadge = document.createElement('div');
+                    offhandBadge.className = 'offhand-badge-container';
+                    offhandBadge.textContent = 'offhand';
+                    el.appendChild(offhandBadge);
+                }
+            }
+        }
     }
 
     el.addEventListener('dragstart', (ev) => {
