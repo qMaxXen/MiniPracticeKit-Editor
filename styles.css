@@ -15,9 +15,13 @@
 body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
 header{display:flex;align-items:center;padding:14px 20px;background:linear-gradient(180deg,#222,#1f1f1f)}
 h1{font-size:1rem;margin:0;flex:1;}
+.header-logo{width:32px;height:32px;margin-right:10px;image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+.header-author{font-size:.75rem;color:#888;font-weight:400;margin-left:8px;opacity:.7}
 .controls{display:flex;gap:.5rem;flex:1;justify-content:flex-end;}
 
-.btn{background:var(--accent);color:#121212;border:0;padding:.45rem .7rem;border-radius:8px;cursor:pointer;font-weight:600}
+.btn{background:var(--accent);color:#121212;border:0;padding:.45rem .7rem;border-radius:8px;cursor:pointer;font-weight:600;transition:background .18s}
+
+.btn:hover{background:#64c0ff}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.06)}
 .btn.small{padding:.25rem .5rem;font-size:.85rem;border-radius:6px}
 
@@ -102,7 +106,7 @@ z-index:100;
 #offhandPickerModal .modal{z-index:601}
 
 #githubBtn { transition: transform .28s cubic-bezier(.2,.9,.3,1); }
-#githubBtn:hover { transform: scale(1.08); }
+#githubBtn:hover{opacity:.8}
 #githubBtn.git-anim { animation: gitpop .6s ease; }
 
 @keyframes gitpop {
@@ -126,7 +130,7 @@ border: 1px solid #666;
 border-radius: 4px;
 padding: 4px 10px;
 font-size: 0.9rem;
-transition: background-color 0.18s, transform 0.18s;
+transition: background-color 0.18s;
 }
 
 #githubBtn {
@@ -137,7 +141,6 @@ margin:0;
 
 .gray-btn:hover {
 background-color: #666;
-transform: scale(1.03);
 }
 
 
@@ -254,12 +257,11 @@ border: 1px solid rgba(255,255,255,0.02);
 }
 
 .btn.ghost {
-transition: background-color 0.18s, transform 0.18s;
+transition: background-color 0.18s;
 }
 
 .btn.ghost:hover {
-background-color: rgba(255,255,255,0.06);
-transform: scale(1.03);
+background-color: rgba(255,255,255,0.08);
 }
 .drag-overlay {
 position: fixed;
@@ -368,7 +370,7 @@ border-radius: 6px;
 }
 
 .hotbar-option:hover {
-  background: rgba(77,171,247,0.1);
+  background: rgba(77,171,247,0.12);
 }
 
 .hotbar-option.active {
@@ -467,23 +469,45 @@ border-radius: 6px;
 
 .success-notification {
   position: fixed;
-  top: 20px;
+  top: 24px;
   left: 50%;
-  transform: translateX(-50%);
-  background: rgba(64, 64, 64, 1);
-  color: white;
-  padding: 14px 28px;
-  border-radius: 8px;
+  transform: translateX(-50%) translateY(-10px);
+  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   z-index: 10000;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.success-notification::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--accent), #3d9fd8);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0a0a0a;
+  flex-shrink: 0;
 }
 
 .success-notification.show {
   opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .count-row {
@@ -720,4 +744,19 @@ border-radius: 6px;
   color: var(--text);
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn.destructive {
+background: #dc3545;
+color: #fff;
+border: 0;
+transition: background 0.18s;
+}
+
+.btn.destructive:hover {
+background: #c82333;
+}
+
+.btn.small:not(.ghost):not(.destructive):hover {
+background: #5eb8ff;
 }

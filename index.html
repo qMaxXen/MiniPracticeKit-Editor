@@ -3,14 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MPK Editor</title>
+  <title>MiniPracticeKit Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
   <link rel="stylesheet" href="styles.css?v=1.0.7">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
   <header>
-    <h1>MiniPracticeKit Editor</h1>
+    <h1 style="display:flex;align-items:center">
+      <img src="icons/items/repeating_command_block.png" alt="MPK Logo" class="header-logo">
+      <span>MiniPracticeKit Editor</span>
+      <span class="header-author">by qMaxXen</span>
+    </h1>
 
     <div class="hotbar-selector-container" style="margin-left: auto; margin-right: auto;">
       <button id="hotbarDropdownBtn" class="btn gray-btn" style="position: relative;">
@@ -225,7 +229,7 @@
         <div id="containerGrid" style="display:grid;grid-template-columns:repeat(9,64px);gap:8px"></div>
         <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:10px">
           <div class="small" style="color:var(--muted)">Click a slot to edit or replace.</div>
-          <button id="deleteContainer" class="btn small" style="background:#ff4d4f;color:#fff;border:0">Delete container</button>
+          <button id="deleteContainer" class="btn small destructive">Delete container</button>
         </div>
       </div>
     </div>
