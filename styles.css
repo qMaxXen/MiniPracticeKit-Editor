@@ -380,7 +380,7 @@ border-radius: 6px;
 
 .hotbar-caret {
   width: 20px;              
-  height: 20x;           
+  height: 20px;           
   object-fit: contain;
   flex-shrink: 0;
   filter: invert(1) brightness(2);  
