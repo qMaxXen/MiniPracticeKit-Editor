@@ -2242,6 +2242,8 @@ function renderCurrentContainer(){
         });
     }
 
+    imgEl.draggable = false
+
     if (!obj || (String(obj.id || '').toLowerCase().includes('air'))) {
         const emptyBadge = document.createElement('div');
         emptyBadge.style.position = 'absolute';
