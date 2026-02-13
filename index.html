@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MiniPracticeKit Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.10">
+  <link rel="stylesheet" href="styles.css?v=1.0.11">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
@@ -109,12 +109,14 @@
 
       <div style="display:flex;gap:12px;margin-top:10px">
         <div style="width:120px;display:flex;flex-direction:column;align-items:center;gap:8px">
-          <img id="slotPreview" src="./icons/items/air.png" width="128" height="128" style="image-rendering:pixelated;border-radius:8px" onerror="this.src='./icons/items/air.png'"/>
+          <div style="width:128px;height:128px;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#1a1a1a,#121212);border-radius:8px">
+            <div class="loading-spinner" style="display:none"></div>
+            <img id="slotPreview" src="./icons/items/air.png" width="128" height="128" style="image-rendering:pixelated;border-radius:8px;position:absolute" onerror="this.src='./icons/items/air.png'" class="loaded"/>
+          </div>
           <div class="inline">
             <button id="clearSlotBtn" class="btn small ghost">Clear</button>
           </div>
         </div>
-
         <div style="flex:1">
           <div class="row" style="margin-bottom:8px; align-items:center;">
             <div style="flex:1">
@@ -288,6 +290,6 @@
         </div>
       </div>
     </div>
-  <script type="module" src="script.js?v=1.0.10"></script>
+  <script type="module" src="script.js?v=1.0.11"></script>
 </body>
 </html>

@@ -294,6 +294,9 @@ function preloadIcon(iconName) {
 
 preloadIcon('air');
 
+const arrowImg = new Image();
+arrowImg.src = './icons/ui/arrow.svg';
+
 async function loadIconsIndex(){
     const candidates = [
     './icons/list/icons.json'
@@ -1982,12 +1985,47 @@ function openSlotEditor(slotIndex){
     selectedIdForApply = el.id || 'minecraft:air';
     const isAir = (selectedIdForApply || '').toLowerCase().includes('air');
 
+    const slotPreviewContainer = slotPreview.parentElement;
+    const slotSpinner = slotPreviewContainer.querySelector('.loading-spinner');
+
     if (!isAir) {
-    slotPreview.src = iconsPath + selectedIdForApply.split(':').pop() + '.png';
-    slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+        const iconName = selectedIdForApply.split(':').pop();
+        const cachedImg = iconCache.get(iconName);
+        
+        if (cachedImg && cachedImg.complete) {
+            slotSpinner.style.display = 'none';
+            slotPreview.src = cachedImg.src;
+            slotPreview.classList.add('loaded');
+        } else {
+            slotPreview.classList.remove('loaded');
+            slotSpinner.style.display = 'block';
+            slotPreview.src = iconsPath + iconName + '.png';
+            slotPreview.onload = () => {
+                slotSpinner.style.display = 'none';
+                slotPreview.classList.add('loaded');
+                if (!iconCache.has(iconName)) {
+                    preloadIcon(iconName);
+                }
+            };
+            slotPreview.onerror = () => {
+                slotSpinner.style.display = 'none';
+                slotPreview.src = iconsPath + 'air.png';
+                slotPreview.classList.add('loaded');
+            };
+        }
     } else {
-    slotPreview.src = './icons/ui/empty.png';
-    slotPreview.onerror = () => slotPreview.src = iconsPath + 'air.png';
+        slotPreview.classList.remove('loaded');
+        slotSpinner.style.display = 'block';
+        slotPreview.src = './icons/ui/empty.png';
+        slotPreview.onload = () => {
+            slotSpinner.style.display = 'none';
+            slotPreview.classList.add('loaded');
+        };
+        slotPreview.onerror = () => {
+            slotSpinner.style.display = 'none';
+            slotPreview.src = iconsPath + 'air.png';
+            slotPreview.classList.add('loaded');
+        };
     }
 
     const pretty = displayName(selectedIdForApply);
@@ -2169,17 +2207,40 @@ function renderCurrentContainer(){
     const countVal = Number(rawCount || 0);
     const countDisplay = (obj && !(String(obj.id || '').toLowerCase().includes('air')) && countVal > 0) ? String(countVal) : '';
 
-    const imgSrc = iconsPath + ((obj && obj.id) ? obj.id.split(':').pop() : 'air') + '.png';
+    const iconName = (obj && obj.id) ? obj.id.split(':').pop() : 'air';
     const countHtml = countDisplay ? `<div class="count">${countDisplay}</div>` : '';
+
     el.innerHTML = `
-        <img src="${imgSrc}" onerror="this.src='${iconsPath}air.png'">
+        <div class="loading-spinner"></div>
+        <img src="${iconsPath + iconName + '.png'}" onerror="this.src='${iconsPath}air.png'" style="opacity:0">
         ${countHtml}
     `;
 
-
-    
     const imgEl = el.querySelector('img');
-    if(imgEl) imgEl.draggable = false;
+    const spinner = el.querySelector('.loading-spinner');
+    const cachedImg = iconCache.get(iconName);
+
+    if (cachedImg && cachedImg.complete) {
+        spinner.style.display = 'none';
+        imgEl.src = cachedImg.src;
+        imgEl.style.opacity = '1';
+        imgEl.classList.add('loaded');
+    } else {
+        imgEl.addEventListener('load', () => {
+            spinner.style.display = 'none';
+            imgEl.style.opacity = '1';
+            imgEl.classList.add('loaded');
+            if (!iconCache.has(iconName)) {
+                preloadIcon(iconName);
+            }
+        });
+        imgEl.addEventListener('error', () => {
+            spinner.style.display = 'none';
+            imgEl.src = iconsPath + 'air.png';
+            imgEl.style.opacity = '1';
+            imgEl.classList.add('loaded');
+        });
+    }
 
     if (!obj || (String(obj.id || '').toLowerCase().includes('air'))) {
         const emptyBadge = document.createElement('div');

@@ -205,7 +205,24 @@ color: var(--text);
 z-index: 3;
 }
 .container-cell.dragging, .slot.dragging{opacity:.6;transform:scale(.97)}
-.container-cell img{ width:36px; height:36px; image-rendering:pixelated; transition: transform .12s ease; }
+.container-cell img{ 
+    width:36px; 
+    height:36px; 
+    image-rendering:pixelated; 
+    transition: transform .12s ease, opacity 0.3s ease; 
+    position: absolute;
+}
+
+.container-cell .loading-spinner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 2;
+}
 
 
 #containerModal .modal .title {
