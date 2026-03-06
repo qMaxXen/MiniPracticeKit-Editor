@@ -655,7 +655,7 @@ pasteSlotBtn.addEventListener('click', () => {
     const ctx = applyMode || { type: 'top', index: activeSlot };
 
     try {
-    const cloned = JSON.parse(JSON.stringify(slotClipboard.data || {})); // deep clone
+    const cloned = JSON.parse(JSON.stringify(slotClipboard.data || {}));
     if (ctx.type === 'top') {
         const idx = Number(ctx.index ?? activeSlot);
         cloned.Slot = idx;

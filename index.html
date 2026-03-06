@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MiniPracticeKit Editor</title>
   <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.11">
+  <link rel="stylesheet" href="styles.css?v=1.0.12">
 </head>
 <body>
   <div id="successNotification" class="success-notification"></div>
@@ -72,17 +72,35 @@
             Items in the <strong>White Shulker Box</strong> will be put in your inventory in a randomized order, so put items there that are disorganized during a run.
           </div>
         </div>
-
-        <div class="explanation-footer">
-          <p class="explanation-readme">
-            Read the
-            <a href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#minipracticekit-v06"
+        <div class="explanation-item">
+          <div class="explanation-icon-wrapper explanation-icon-wrapper--triggers">
+            <img src="icons/items/netherrack.png" alt="Netherrack" class="explanation-icon">
+            <img src="icons/items/iron_sword.png" alt="Iron Sword" class="explanation-icon">
+            <img src="icons/items/golden_helmet.png" alt="Gold Helmet" class="explanation-icon">
+          </div>
+          <div class="explanation-text">
+            Items after the chest and shulker box are <strong>triggers</strong>. Read
+            this part of the
+            <a class="triggers-link"
+              href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#triggers-and-actions"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open MiniPracticeKit README">
               MiniPracticeKit README
             </a>
-            for more information. (e.g. installing & using MiniPracticeKit)
+            for an explanation.
+          </div>
+        </div>
+        <div class="explanation-footer">
+          <p class="explanation-readme">
+            Read this part of the
+            <a href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#how-to-install-and-use-minipracticekit"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open MiniPracticeKit README">
+              MiniPracticeKit README
+            </a>
+            for how to install and use MiniPracticeKit.
           </p>
         </div>
       </div>
@@ -290,6 +308,6 @@
         </div>
       </div>
     </div>
-  <script type="module" src="script.js?v=1.0.11"></script>
+  <script type="module" src="script.js?v=1.0.12"></script>
 </body>
 </html>
