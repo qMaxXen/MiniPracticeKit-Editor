@@ -1,91 +1,159 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MiniPracticeKit Editor</title>
-  <link rel="icon" type="image/png" sizes="128x128" href="icons/items/repeating_command_block.png">
-  <link rel="stylesheet" href="styles.css?v=1.0.13">
-</head>
-<body>
-  <div id="successNotification" class="success-notification"></div>
-  <header>
-    <h1 style="display:flex;align-items:center">
-      <img src="icons/items/repeating_command_block.png" alt="MPK Logo" class="header-logo">
-      <span>MiniPracticeKit Editor</span>
-      <span class="header-author">by qMaxXen</span>
-    </h1>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MiniPracticeKit Editor</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="icons/items/repeating_command_block.png"
+    />
+    <link rel="stylesheet" href="styles.css?v=1.0.13" />
+  </head>
+  <body>
+    <div id="successNotification" class="success-notification"></div>
+    <header>
+      <h1 style="display: flex; align-items: center">
+        <img
+          src="icons/items/repeating_command_block.png"
+          alt="MPK Logo"
+          class="header-logo"
+        />
+        <span>MiniPracticeKit Editor</span>
+        <span class="header-author">by qMaxXen</span>
+      </h1>
 
-    <div class="hotbar-selector-container" style="margin-left: auto; margin-right: auto;">
-      <button id="hotbarDropdownBtn" class="btn gray-btn" style="position: relative;">
-        <span class="hotbar-btn-label">Hotbar 1</span>
-        <img src="icons/ui/dropdown.svg" alt="" aria-hidden="true" class="hotbar-caret">
-      </button>
-      <div id="hotbarDropdown" class="hotbar-dropdown" style="display: none;">
-        <div class="hotbar-option" data-hotbar="0">Hotbar 1</div>
-        <div class="hotbar-option" data-hotbar="1">Hotbar 2</div>
-        <div class="hotbar-option" data-hotbar="2">Hotbar 3</div>
-        <div class="hotbar-option" data-hotbar="3">Hotbar 4</div>
-        <div class="hotbar-option" data-hotbar="4">Hotbar 5</div>
-        <div class="hotbar-option" data-hotbar="5">Hotbar 6</div>
-        <div class="hotbar-option" data-hotbar="6">Hotbar 7</div>
-        <div class="hotbar-option" data-hotbar="7">Hotbar 8</div>
-        <div class="hotbar-option" data-hotbar="8">Hotbar 9</div>
+      <div
+        class="hotbar-selector-container"
+        style="margin-left: auto; margin-right: auto"
+      >
+        <button
+          id="hotbarDropdownBtn"
+          class="btn gray-btn"
+          style="position: relative"
+        >
+          <span class="hotbar-btn-label">Hotbar 1</span>
+          <img
+            src="icons/ui/dropdown.svg"
+            alt=""
+            aria-hidden="true"
+            class="hotbar-caret"
+          />
+        </button>
+        <div id="hotbarDropdown" class="hotbar-dropdown" style="display: none">
+          <div class="hotbar-option" data-hotbar="0">Hotbar 1</div>
+          <div class="hotbar-option" data-hotbar="1">Hotbar 2</div>
+          <div class="hotbar-option" data-hotbar="2">Hotbar 3</div>
+          <div class="hotbar-option" data-hotbar="3">Hotbar 4</div>
+          <div class="hotbar-option" data-hotbar="4">Hotbar 5</div>
+          <div class="hotbar-option" data-hotbar="5">Hotbar 6</div>
+          <div class="hotbar-option" data-hotbar="6">Hotbar 7</div>
+          <div class="hotbar-option" data-hotbar="7">Hotbar 8</div>
+          <div class="hotbar-option" data-hotbar="8">Hotbar 9</div>
+        </div>
       </div>
-    </div>
 
-    <div class="controls" style="display:flex; align-items:center; gap:12px;">
-      <div style="display:flex; align-items:center; gap:6px;">
-        <img id="githubBtn" src="./icons/ui/github.png" width="28" height="28" alt="GitHub" title="Open GitHub" style="cursor:pointer;border-radius:6px;object-fit:contain">
-        <div class="separator" style="margin:0 5px;"></div>
+      <div
+        class="controls"
+        style="display: flex; align-items: center; gap: 12px"
+      >
+        <div style="display: flex; align-items: center; gap: 6px">
+          <img
+            id="githubBtn"
+            src="./icons/ui/github.png"
+            width="28"
+            height="28"
+            alt="GitHub"
+            title="Open GitHub"
+            style="cursor: pointer; border-radius: 6px; object-fit: contain"
+          />
+          <div class="separator" style="margin: 0 5px"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px">
+          <button id="openFile" class="btn gray-btn">Open hotbar.nbt</button>
+          <input
+            id="file"
+            type="file"
+            accept=".nbt,.dat,.json"
+            style="display: none"
+          />
+          <button id="download" class="btn gray-btn">
+            Download hotbar.nbt
+          </button>
+          <button id="reset" class="btn gray-btn">Reset</button>
+        </div>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <button id="openFile" class="btn gray-btn">Open hotbar.nbt</button>
-        <input id="file" type="file" accept=".nbt,.dat,.json" style="display:none" />
-        <button id="download" class="btn gray-btn">Download hotbar.nbt</button>
-        <button id="reset" class="btn gray-btn">Reset</button>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <p class="muted" style="text-align:center">Click a slot to edit it. Drag & drop to move items between slots.</p>
+    <main>
+      <p class="muted" style="text-align: center">
+        Click a slot to edit it. Drag & drop to move items between slots.
+      </p>
 
-    <div class="grid" id="grid" aria-label="Hotbar"></div>
+      <div class="grid" id="grid" aria-label="Hotbar"></div>
 
-    <div style="height:8px"></div>
-    <div class="explanation-section">
+      <div style="height: 8px"></div>
+      <div class="explanation-section">
         <div class="explanation-item">
           <div class="explanation-icon-wrapper">
-            <img src="icons/items/chest.png" alt="Chest" class="explanation-icon">
+            <img
+              src="icons/items/chest.png"
+              alt="Chest"
+              class="explanation-icon"
+            />
           </div>
           <div class="explanation-text">
-            Items in the <strong>Chest</strong> will be put in your inventory in exactly the same order, so put hotbar items there.
+            Items in the <strong>Chest</strong> will be put in your inventory in
+            exactly the same order, so put hotbar items there.
           </div>
         </div>
-        
+
         <div class="explanation-item">
           <div class="explanation-icon-wrapper">
-            <img src="icons/items/white_shulker_box.png" alt="White Shulker Box" class="explanation-icon">
+            <img
+              src="icons/items/white_shulker_box.png"
+              alt="White Shulker Box"
+              class="explanation-icon"
+            />
           </div>
           <div class="explanation-text">
-            Items in the <strong>White Shulker Box</strong> will be put in your inventory in a randomized order, so put items there that are disorganized during a run.
+            Items in the <strong>White Shulker Box</strong> will be put in your
+            inventory in a randomized order, so put items there that are
+            disorganized during a run.
           </div>
         </div>
         <div class="explanation-item">
-          <div class="explanation-icon-wrapper explanation-icon-wrapper--triggers">
-            <img src="icons/items/netherrack.png" alt="Netherrack" class="explanation-icon">
-            <img src="icons/items/iron_sword.png" alt="Iron Sword" class="explanation-icon">
-            <img src="icons/items/golden_helmet.png" alt="Gold Helmet" class="explanation-icon">
+          <div
+            class="explanation-icon-wrapper explanation-icon-wrapper--triggers"
+          >
+            <img
+              src="icons/items/netherrack.png"
+              alt="Netherrack"
+              class="explanation-icon"
+            />
+            <img
+              src="icons/items/iron_sword.png"
+              alt="Iron Sword"
+              class="explanation-icon"
+            />
+            <img
+              src="icons/items/golden_helmet.png"
+              alt="Gold Helmet"
+              class="explanation-icon"
+            />
           </div>
           <div class="explanation-text">
-            Items after the chest and shulker box are <strong>triggers</strong>. Read
-            this part of the
-            <a class="triggers-link"
+            Items after the chest and shulker box are <strong>triggers</strong>.
+            Read this part of the
+            <a
+              class="triggers-link"
               href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#triggers-and-actions"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open MiniPracticeKit README">
+              aria-label="Open MiniPracticeKit README"
+            >
               MiniPracticeKit README
             </a>
             for an explanation.
@@ -94,167 +162,395 @@
         <div class="explanation-footer">
           <p class="explanation-readme">
             Read this part of the
-            <a href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#how-to-install-and-use-minipracticekit"
+            <a
+              href="https://github.com/Knawk/mc-MiniPracticeKit?tab=readme-ov-file#how-to-install-and-use-minipracticekit"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open MiniPracticeKit README">
+              aria-label="Open MiniPracticeKit README"
+            >
               MiniPracticeKit README
             </a>
             for how to install and use MiniPracticeKit.
           </p>
         </div>
       </div>
-  </main>
+    </main>
 
-  <div class="drag-overlay" id="dragOverlay">
-    <div class="drag-overlay-content">
-      <div class="icon">📁</div>
-      <div class="text">Drop your hotbar.nbt file here</div>
-    </div>
-  </div>
-  
-  <div class="modal-backdrop" id="slotModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div id="modalTitle" class="title">Edit slot</div>
-          <div id="modalSub" class="spoiler"></div>
-        </div>
-        <div style="display:flex;gap:.5rem">
-          <button id="modalClose" class="btn small">Close</button>
-        </div>
+    <div class="drag-overlay" id="dragOverlay">
+      <div class="drag-overlay-content">
+        <div class="icon">📁</div>
+        <div class="text">Drop your hotbar.nbt file here</div>
       </div>
+    </div>
 
-      <div style="display:flex;gap:12px;margin-top:10px">
-        <div style="width:120px;display:flex;flex-direction:column;align-items:center;gap:8px">
-          <div style="width:128px;height:128px;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#1a1a1a,#121212);border-radius:8px">
-            <div class="loading-spinner" style="display:none"></div>
-            <img id="slotPreview" src="./icons/items/air.png" width="128" height="128" style="image-rendering:pixelated;border-radius:8px;position:absolute" onerror="this.src='./icons/items/air.png'" class="loaded"/>
+    <div class="modal-backdrop" id="slotModal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <div id="modalTitle" class="title">Edit slot</div>
+            <div id="modalSub" class="spoiler"></div>
           </div>
-          <div class="inline">
-            <button id="clearSlotBtn" class="btn small ghost">Clear</button>
+          <div style="display: flex; gap: 0.5rem">
+            <button id="modalClose" class="btn small">Close</button>
           </div>
         </div>
-        <div style="flex:1">
-          <div class="row" style="margin-bottom:8px; align-items:center;">
-            <div style="flex:1">
-              <label class="small">Item</label>
-              <input id="itemIdDisplay" type="text" readonly class="nonselectable" />
-            </div>
 
-            <div style="width:220px; display:flex; gap:8px; align-items:center;">
-              <div class="count-row vertical">
-                <label class="small">Count</label>
-                <div class="count-controls" style="width:100%;">
-                  <input id="itemCountInput" type="range" min="1" max="64" value="1">
-                  <span id="itemCountLabel" class="count-badge-inline">1</span>
+        <div style="display: flex; gap: 12px; margin-top: 10px">
+          <div
+            style="
+              width: 120px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <div
+              style="
+                width: 128px;
+                height: 128px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(180deg, #1a1a1a, #121212);
+                border-radius: 8px;
+              "
+            >
+              <div class="loading-spinner" style="display: none"></div>
+              <img
+                id="slotPreview"
+                src="./icons/items/air.png"
+                width="128"
+                height="128"
+                style="
+                  image-rendering: pixelated;
+                  border-radius: 8px;
+                  position: absolute;
+                "
+                onerror="this.src = './icons/items/air.png'"
+                class="loaded"
+              />
+            </div>
+            <div class="inline">
+              <button id="clearSlotBtn" class="btn small ghost">Clear</button>
+            </div>
+          </div>
+          <div style="flex: 1">
+            <div class="row" style="margin-bottom: 8px; align-items: center">
+              <div style="flex: 1">
+                <label class="small">Item</label>
+                <input
+                  id="itemIdDisplay"
+                  type="text"
+                  readonly
+                  class="nonselectable"
+                />
+              </div>
+
+              <div
+                style="
+                  width: 220px;
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+                "
+              >
+                <div class="count-row vertical">
+                  <label class="small">Count</label>
+                  <div class="count-controls" style="width: 100%">
+                    <input
+                      id="itemCountInput"
+                      type="range"
+                      min="1"
+                      max="64"
+                      value="1"
+                    />
+                    <span id="itemCountLabel" class="count-badge-inline"
+                      >1</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <button id="applySlotBtn" class="btn">Apply</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center">
+              <button id="applySlotBtn" class="btn">Apply</button>
 
-            <div id="containerViewBtnWrap" style="margin-left:8px;display:inline-flex;gap:6px;align-items:center"></div>
-            <div style="margin-left:auto;color:var(--muted);font-size:.9rem">Drag a slot to reorder</div>
-          </div>
-
-        </div>
-      </div>
-      <hr style="margin:14px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
-
-      <div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <input id="pickerSearch" type="text" placeholder="Search items...">
-        </div>
-        <div class="picker-list" id="pickerList"></div>
-      </div>
-    </div>
-  </div>
-
-    <div class="modal-backdrop" id="bookModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-            <div id="bookModalTitle" class="title">Edit book</div>
-        </div>
-        <div>
-            <button id="bookModalClose" class="btn small">Close</button>
-        </div>
-        </div>
-
-        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
-        <label class="small">Book name</label>
-        <input id="bookNameInput" type="text" placeholder="Display name" style="width:100%;margin-bottom:8px;background:#0f0f0f;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:6px">
-
-        <label class="small" style="margin-top:4px">Lore</label>
-        <textarea id="bookLoreTextarea" placeholder="Lore text" style="width:100%;height:40px;max-height:80px;min-height:36px;background:#0f0f0f;color:var(--text);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:6px;font-family:monospace;resize:vertical;overflow:auto"></textarea>
-
-        <label class="small">Pages</label>
-        <div id="bookPagesContainer" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div style="display:flex;gap:.5rem;justify-content:flex-start;margin-top:8px">
-            <div style="flex:1"></div>
-            <button id="saveBookBtn" class="btn">Save</button>
-            <button id="cancelBookBtn" class="btn ghost">Cancel</button>
-        </div>
-        </div>
-    </div>
-    </div>
-  <div class="modal-backdrop" id="containerModal">
-    <div class="modal" style="max-width:980px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="display:flex;align-items:center;gap:1px;">
-            <div id="containerItemName" class="title"
-                style="margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; flex-shrink:0;">
-              Container
+              <div
+                id="containerViewBtnWrap"
+                style="
+                  margin-left: 8px;
+                  display: inline-flex;
+                  gap: 6px;
+                  align-items: center;
+                "
+              ></div>
+              <div
+                style="
+                  margin-left: auto;
+                  color: var(--muted);
+                  font-size: 0.9rem;
+                "
+              >
+                Drag a slot to reorder
+              </div>
             </div>
-            <div style="color:var(--muted);font-size:0.95rem; flex-shrink:0; margin:0 2px;">—</div>
+          </div>
+        </div>
+        <hr
+          style="
+            margin: 14px 0;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+          "
+        />
 
-            <input id="containerNameInput" type="text"
-              placeholder="Container display name"
-              style="
-                background:rgba(255,255,255,0.02); /* faint background to suggest interactivity */
-                border:0;
-                border-bottom:1px solid rgba(255,255,255,0.1); /* slightly more visible than before */
-                color:var(--accent);
-                padding:4px 6px;
-                border-radius:4px;
-                flex-shrink:1;
-                flex-grow:1;
-                min-width:140px;
-                max-width:200px;
-                outline:none;
-                transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-                cursor:text;
-              "
-              onfocus="this.style.borderBottom='1px solid var(--accent)'; this.style.background='rgba(255,255,255,0.05)'; this.style.boxShadow='0 0 5px rgba(255,255,255,0.1)';"
-              onblur="this.style.borderBottom='1px solid rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'; this.style.boxShadow='none';"
-              onmouseover="this.style.background='rgba(255,255,255,0.04)';"
-              onmouseout="this.style.background='rgba(255,255,255,0.02)';"
+        <div>
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              align-items: center;
+              margin-bottom: 8px;
+            "
+          >
+            <input
+              id="pickerSearch"
+              type="text"
+              placeholder="Search items..."
             />
           </div>
-          <div id="containerSub" class="spoiler"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button id="pasteContainerBtn" class="btn small">Paste</button>
-          <button id="copyContainerBtn" class="btn small">Copy</button>
-          <button id="closeContainer" class="btn small">Close</button>
-        </div>
-    </div>
-      <div style="margin-top:10px">
-        <div id="containerGrid" style="display:grid;grid-template-columns:repeat(9,64px);gap:8px"></div>
-        <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:10px">
-          <div class="small" style="color:var(--muted)">Click a slot to edit or replace.</div>
-          <button id="deleteContainer" class="btn small destructive">Delete container</button>
+          <div class="picker-list" id="pickerList"></div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="modal-backdrop" id="offhandModal">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offhandModalTitle" style="max-width:520px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
+
+    <div class="modal-backdrop" id="bookModal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bookModalTitle"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <div id="bookModalTitle" class="title">Edit book</div>
+          </div>
+          <div>
+            <button id="bookModalClose" class="btn small">Close</button>
+          </div>
+        </div>
+
+        <div
+          style="
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          "
+        >
+          <label class="small">Book name</label>
+          <input
+            id="bookNameInput"
+            type="text"
+            placeholder="Display name"
+            style="
+              width: 100%;
+              margin-bottom: 8px;
+              background: #0f0f0f;
+              color: var(--text);
+              border: 1px solid rgba(255, 255, 255, 0.04);
+              padding: 8px;
+              border-radius: 6px;
+            "
+          />
+
+          <label class="small" style="margin-top: 4px">Lore</label>
+          <textarea
+            id="bookLoreTextarea"
+            placeholder="Lore text"
+            style="
+              width: 100%;
+              height: 40px;
+              max-height: 80px;
+              min-height: 36px;
+              background: #0f0f0f;
+              color: var(--text);
+              border: 1px solid rgba(255, 255, 255, 0.04);
+              padding: 8px;
+              border-radius: 6px;
+              font-family: monospace;
+              resize: vertical;
+              overflow: auto;
+            "
+          ></textarea>
+
+          <label class="small">Pages</label>
+          <div
+            id="bookPagesContainer"
+            style="display: flex; flex-direction: column; gap: 8px"
+          ></div>
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              justify-content: flex-start;
+              margin-top: 8px;
+            "
+          >
+            <div style="flex: 1"></div>
+            <button id="saveBookBtn" class="btn">Save</button>
+            <button id="cancelBookBtn" class="btn ghost">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop" id="containerModal">
+      <div class="modal" style="max-width: 980px">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <div style="display: flex; align-items: center; gap: 1px">
+              <div
+                id="containerItemName"
+                class="title"
+                style="
+                  margin: 0;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 200px;
+                  flex-shrink: 0;
+                "
+              >
+                Container
+              </div>
+              <div
+                style="
+                  color: var(--muted);
+                  font-size: 0.95rem;
+                  flex-shrink: 0;
+                  margin: 0 2px;
+                "
+              >
+                —
+              </div>
+
+              <input
+                id="containerNameInput"
+                type="text"
+                placeholder="Container display name"
+                style="
+                  background: rgba(
+                    255,
+                    255,
+                    255,
+                    0.02
+                  ); /* faint background to suggest interactivity */
+                  border: 0;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* slightly more visible than before */
+                  color: var(--accent);
+                  padding: 4px 6px;
+                  border-radius: 4px;
+                  flex-shrink: 1;
+                  flex-grow: 1;
+                  min-width: 140px;
+                  max-width: 200px;
+                  outline: none;
+                  transition:
+                    border-color 0.2s,
+                    background 0.2s,
+                    box-shadow 0.2s;
+                  cursor: text;
+                "
+                onfocus="
+                  this.style.borderBottom = '1px solid var(--accent)';
+                  this.style.background = 'rgba(255,255,255,0.05)';
+                  this.style.boxShadow = '0 0 5px rgba(255,255,255,0.1)';
+                "
+                onblur="
+                  this.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                  this.style.background = 'rgba(255,255,255,0.02)';
+                  this.style.boxShadow = 'none';
+                "
+                onmouseover="this.style.background = 'rgba(255,255,255,0.04)'"
+                onmouseout="this.style.background = 'rgba(255,255,255,0.02)'"
+              />
+            </div>
+            <div id="containerSub" class="spoiler"></div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button id="pasteContainerBtn" class="btn small">Paste</button>
+            <button id="copyContainerBtn" class="btn small">Copy</button>
+            <button id="closeContainer" class="btn small">Close</button>
+          </div>
+        </div>
+        <div style="margin-top: 10px">
+          <div
+            id="containerGrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(9, 64px);
+              gap: 8px;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              align-items: center;
+              justify-content: space-between;
+              margin-top: 10px;
+            "
+          >
+            <div class="small" style="color: var(--muted)">
+              Click a slot to edit or replace.
+            </div>
+            <button id="deleteContainer" class="btn small destructive">
+              Delete container
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop" id="offhandModal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="offhandModalTitle"
+        style="max-width: 520px"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
           <div>
             <div id="offhandModalTitle" class="title">Add offhand item</div>
           </div>
@@ -262,34 +558,98 @@
             <button id="offhandModalClose" class="btn small">Close</button>
           </div>
         </div>
-        <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+        <div
+          style="
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+          "
+        >
           <div>
             <label class="small">Minecraft version</label>
-            <select id="offhandVersionSelect" style="width:100%;margin-top:4px">
+            <select
+              id="offhandVersionSelect"
+              style="width: 100%; margin-top: 4px"
+            >
               <option value="pre-1.17" selected>pre-1.17</option>
               <option value="1.17+">1.17+</option>
             </select>
           </div>
           <div>
             <label class="small">Offhand item</label>
-            <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
-              <div id="offhandItemIcon" style="width:48px;height:48px;background:linear-gradient(180deg,#1a1a1a,#121212);border-radius:8px;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s ease">
-                <img src="./icons/items/cooked_salmon.png" width="36" height="36" style="image-rendering:pixelated" onerror="this.src='./icons/items/air.png'">
+            <div
+              style="
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-top: 6px;
+              "
+            >
+              <div
+                id="offhandItemIcon"
+                style="
+                  width: 48px;
+                  height: 48px;
+                  background: linear-gradient(180deg, #1a1a1a, #121212);
+                  border-radius: 8px;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  transition: border-color 0.15s ease;
+                "
+              >
+                <img
+                  src="./icons/items/cooked_salmon.png"
+                  width="36"
+                  height="36"
+                  style="image-rendering: pixelated"
+                  onerror="this.src = './icons/items/air.png'"
+                />
               </div>
-              <div style="flex:1">
-                <input id="offhandItemDisplay" type="text" readonly value="cooked salmon" style="background:#0f0f0f;color:var(--muted);border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:6px;width:100%;cursor:pointer" />
+              <div style="flex: 1">
+                <input
+                  id="offhandItemDisplay"
+                  type="text"
+                  readonly
+                  value="cooked salmon"
+                  style="
+                    background: #0f0f0f;
+                    color: var(--muted);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    padding: 8px;
+                    border-radius: 6px;
+                    width: 100%;
+                    cursor: pointer;
+                  "
+                />
               </div>
             </div>
           </div>
           <div>
             <label class="small">Item count</label>
-            <div class="count-controls" style="width:100%;margin-top:4px">
-              <input id="offhandCountInput" type="range" min="1" max="64" value="5">
+            <div class="count-controls" style="width: 100%; margin-top: 4px">
+              <input
+                id="offhandCountInput"
+                type="range"
+                min="1"
+                max="64"
+                value="5"
+              />
               <span id="offhandCountLabel" class="count-badge-inline">5</span>
             </div>
           </div>
 
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              justify-content: flex-end;
+              margin-top: 8px;
+            "
+          >
             <button id="offhandCancelBtn" class="btn ghost">Cancel</button>
             <button id="offhandCreateBtn" class="btn">Create book</button>
           </div>
@@ -297,17 +657,38 @@
       </div>
     </div>
     <div class="modal-backdrop" id="offhandPickerModal">
-      <div class="modal" role="dialog" aria-modal="true" style="max-width:480px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        style="max-width: 480px"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          "
+        >
           <div class="title">Select offhand item</div>
           <button id="offhandPickerClose" class="btn small">Close</button>
         </div>
         <div>
-          <input id="offhandPickerSearch" type="text" placeholder="Search items..." style="margin-bottom:8px">
-          <div class="picker-list" id="offhandPickerList" style="max-height:320px"></div>
+          <input
+            id="offhandPickerSearch"
+            type="text"
+            placeholder="Search items..."
+            style="margin-bottom: 8px"
+          />
+          <div
+            class="picker-list"
+            id="offhandPickerList"
+            style="max-height: 320px"
+          ></div>
         </div>
       </div>
     </div>
-  <script type="module" src="script.js?v=1.0.13"></script>
-</body>
+    <script type="module" src="script.js?v=1.0.13"></script>
+  </body>
 </html>
