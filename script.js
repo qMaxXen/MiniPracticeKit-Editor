@@ -1022,6 +1022,7 @@ deleteContainerBtn.addEventListener("click", () => {
       _raw: { id: "minecraft:air", Count: 1 },
     };
     renderGrid();
+    showSuccessNotification("Container deleted");
     containerModal.classList.remove("show");
     containerModal.style.display = "none";
     currentContainerRaw = null;
@@ -1043,11 +1044,9 @@ deleteContainerBtn.addEventListener("click", () => {
           (it) => Number(it.Slot ?? it.slot ?? -1) !== slotIndex,
         );
     }
-    containerModal.classList.remove("show");
-    containerModal.style.display = "none";
-    currentContainerRaw = null;
     renderGrid();
-    currentContainerContext = null;
+    showSuccessNotification("Sub-container deleted");
+    goBackToParentContainer();
     return;
   }
 });
