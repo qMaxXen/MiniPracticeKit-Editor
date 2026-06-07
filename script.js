@@ -483,7 +483,7 @@ async function handleFileLoad(file) {
       itemsArray = JSON.parse(JSON.stringify(allHotbars[0]));
       renderGrid();
       updateHotbarDropdownUI();
-      showSuccessNotification('Successfully loaded your hotbar.nbt!');
+      showSuccessNotification('Imported hotbar.nbt');
     } catch (err) {
       console.error(err);
       alert('Error parsing NBT file: ' + err.message);
@@ -639,6 +639,7 @@ copySlotBtn.addEventListener('click', () => {
             slotClipboard = { source: 'inner', data: rawCopy };
         }
     updateCopyPasteButtons();
+    showSuccessNotification(`Item copied`);
     } catch (e) {
     console.error('Copy failed', e);
     alert('Failed to copy item: ' + (e && e.message ? e.message : String(e)));
@@ -722,6 +723,7 @@ pasteSlotBtn.addEventListener('click', () => {
 
     updateSlotModalButtons();
     updateCopyPasteButtons();
+    showSuccessNotification(`Item pasted`);
     try { pickRenderList(iconList.map(f=>f.replace(/\.png$/i,'')), ''); } catch(e){}
     } catch (e) {
     console.error('Paste failed', e);
@@ -752,7 +754,7 @@ if (copyContainerBtn) {
             });
             
             updateContainerCopyPasteButtons();
-            showSuccessNotification(`Copied ${containerClipboard.length} items from container!`);
+            showSuccessNotification(`${containerClipboard.length} items copied`);
         } catch (e) {
             console.error('Container copy failed', e);
             alert('Failed to copy container: ' + (e && e.message ? e.message : String(e)));
@@ -793,7 +795,7 @@ if (pasteContainerBtn) {
             
             renderCurrentContainer();
             renderGrid();
-            showSuccessNotification(`Pasted ${clonedItems.length} items into container!`);
+            showSuccessNotification(`${clonedItems.length} items pasted`);
         } catch (e) {
             console.error('Container paste failed', e);
             alert('Failed to paste container: ' + (e && e.message ? e.message : String(e)));
@@ -1058,7 +1060,7 @@ function createOffhandBook() {
   renderCurrentContainer();
   renderGrid();
   closeOffhandModal();
-  showSuccessNotification('Offhand book created successfully!');
+  showSuccessNotification('Offhand book created');
 }
 
 function updateSlotModalButtons() {
@@ -2453,7 +2455,7 @@ downloadBtn.addEventListener('click', async ()=>{
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-        showSuccessNotification('Successfully downloaded hotbar.nbt!');
+        showSuccessNotification('hotbar.nbt downloaded');
       } catch(e) { alert('Failed to write: ' + e.message); console.error(e); }
       return;
     }
@@ -2479,7 +2481,7 @@ downloadBtn.addEventListener('click', async ()=>{
         const blob = new Blob([bin], {type:'application/octet-stream'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'hotbar.nbt'; a.click(); URL.revokeObjectURL(url);
-        showSuccessNotification('Successfully downloaded hotbar.nbt!');
+        showSuccessNotification('hotbar.nbt downloaded');
       }catch(e){ alert('Failed to write: '+e.message); console.error(e); }
     }
 });
@@ -2501,7 +2503,7 @@ resetBtn.addEventListener('click', ()=>{
     renderGrid();
     updateHotbarDropdownUI();
     loadDefaultHotbar();
-    showSuccessNotification('Successfully reset to the default hotbar.nbt!');
+    showSuccessNotification('Reset to the default hotbar.nbt');
 });
 
 renderGrid();
